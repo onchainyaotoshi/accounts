@@ -3,7 +3,9 @@ name: Publish @yaotoshi/auth-sdk
 on:
   push:
     paths:
-      - 'packages/auth-sdk/**'
+      - 'packages/auth-sdk/src/**'
+      - 'packages/auth-sdk/tsup.config.ts'
+      - 'packages/auth-sdk/tsconfig.json'
     branches:
       - main
 
@@ -11,11 +13,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -29,28 +33,27 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check if version changed
-        id: version-check
+      - name: Bump patch version
         working-directory: packages/auth-sdk
         run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view @yaotoshi/auth-sdk version 2>/dev/null || echo "0.0.0")
-          if [ "$PACKAGE_VERSION" = "$NPM_VERSION" ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "Version $PACKAGE_VERSION already published, skipping."
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "Publishing $PACKAGE_VERSION (npm has $NPM_VERSION)"
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npm version patch --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
 
       - name: Build
-        if: steps.version-check.outputs.skip == 'false'
         working-directory: packages/auth-sdk
         run: pnpm build
 
       - name: Publish
-        if: steps.version-check.outputs.skip == 'false'
         working-directory: packages/auth-sdk
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit version bump
+        run: |
+          git add packages/auth-sdk/package.json
+          git commit -m "chore: bump @yaotoshi/auth-sdk to v$NEW_VERSION [skip ci]"
+          git push
