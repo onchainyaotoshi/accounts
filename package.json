@@ -1,0 +1,27 @@
+{
+  "name": "accounts-yaotoshi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Centralized authentication service for Yaotoshi ecosystem",
+  "scripts": {
+    "dev": "docker compose up -d",
+    "dev:logs": "docker compose logs -f api",
+    "migrate": "docker compose exec api pnpm prisma migrate deploy",
+    "seed": "docker compose exec api pnpm prisma db seed",
+    "studio": "docker compose exec api pnpm prisma studio"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "prisma": {
+    "schema": "prisma/schema.prisma",
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "devDependencies": {
+    "prisma": "6.19.2",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "argon2": "^0.41.0"
+  }
+}

@@ -1,0 +1,83 @@
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../common/prisma.service';
+import { generateToken, hashToken } from '../common/utils/crypto';
+import { ClientType } from '@prisma/client';
+
+@Injectable()
+export class ClientsService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(params: {
+    name: string;
+    slug: string;
+    type?: ClientType;
+    redirectUris: string[];
+    postLogoutRedirectUris?: string[];
+    scopes?: string[];
+  }) {
+    const clientId = generateToken(16);
+    let clientSecret: string | undefined;
+    let clientSecretHash: string | undefined;
+
+    if (params.type === 'CONFIDENTIAL') {
+      clientSecret = generateToken(32);
+      clientSecretHash = hashToken(clientSecret);
+    }
+
+    const client = await this.prisma.client.create({
+      data: {
+        name: params.name,
+        slug: params.slug,
+        clientId,
+        clientSecretHash,
+        type: params.type || 'PUBLIC',
+        redirectUris: params.redirectUris,
+        postLogoutRedirectUris: params.postLogoutRedirectUris || [],
+        scopes: params.scopes || ['openid', 'profile', 'email'],
+      },
+    });
+
+    return { client, clientSecret };
+  }
+
+  async findByClientId(clientId: string) {
+    return this.prisma.client.findUnique({ where: { clientId } });
+  }
+
+  async validateRedirectUri(clientId: string, redirectUri: string) {
+    const client = await this.findByClientId(clientId);
+    if (!client) throw new BadRequestException('Invalid client');
+    if (client.status !== 'ACTIVE') throw new BadRequestException('Client is inactive');
+    if (!client.redirectUris.includes(redirectUri)) {
+      throw new BadRequestException('Invalid redirect URI');
+    }
+    return client;
+  }
+
+  async update(id: string, data: { name?: string; redirectUris?: string[]; status?: any }) {
+    return this.prisma.client.update({ where: { id }, data });
+  }
+
+  async list(skip = 0, take = 50) {
+    const [clients, total] = await Promise.all([
+      this.prisma.client.findMany({
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          clientId: true,
+          type: true,
+          redirectUris: true,
+          scopes: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.client.count(),
+    ]);
+    return { clients, total };
+  }
+}
