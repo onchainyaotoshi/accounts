@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "accounts": {
+      "command": "node",
+      "args": ["/root/workspace/accounts/mcp/dist/index.js"],
+      "env": {
+        "ACCOUNTS_API_URL": "http://localhost:7767",
+        "ACCOUNTS_ADMIN_EMAIL": "admin@yaotoshi.xyz",
+        "ACCOUNTS_ADMIN_PASSWORD": "admin12345678"
+      }
+    }
+  }
+}

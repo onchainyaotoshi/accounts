@@ -20,30 +20,33 @@ services:
       context: .
       dockerfile: infra/docker/Dockerfile.api
     ports:
-      - "3000:3000"
+      - "7767:3000"
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://accounts:accounts_secret@postgres:5432/accounts_db}
+      DATABASE_URL: postgresql://accounts:accounts_secret@postgres:5432/accounts_db
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001,http://localhost:3002}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7768,https://accounts.yaotoshi.xyz}
       SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@yaotoshi.xyz}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin12345678}
-      SEED_INVITE_CODE: ${SEED_INVITE_CODE:-YAOTOSHI1}
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./apps/api/src:/app/apps/api/src
-      - ./prisma:/app/prisma
     command: >
       sh -c "
-        cd /app &&
-        pnpm prisma migrate deploy &&
-        pnpm prisma generate &&
-        cd apps/api &&
-        pnpm start:dev
+        npx prisma migrate deploy --schema=prisma/schema.prisma &&
+        node apps/api/dist/main
       "
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    ports:
+      - "7768:7768"
+    environment:
+      INTERNAL_API_URL: http://api:3000
+      NEXT_PUBLIC_API_URL: http://localhost:7767
+    depends_on:
+      - api
 
   mailhog:
     image: mailhog/mailhog:latest
