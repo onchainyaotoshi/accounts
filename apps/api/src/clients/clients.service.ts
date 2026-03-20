@@ -54,6 +54,15 @@ export class ClientsService {
     return client;
   }
 
+  async validatePostLogoutRedirectUri(
+    clientId: string,
+    postLogoutRedirectUri: string,
+  ): Promise<boolean> {
+    const client = await this.findByClientId(clientId);
+    if (!client || client.status !== 'ACTIVE') return false;
+    return client.postLogoutRedirectUris.includes(postLogoutRedirectUri);
+  }
+
   async update(id: string, data: { name?: string; redirectUris?: string[]; status?: any }) {
     return this.prisma.client.update({ where: { id }, data });
   }

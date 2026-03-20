@@ -25,7 +25,8 @@ services:
       DATABASE_URL: postgresql://accounts:accounts_secret@postgres:5432/accounts_db
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7768,https://accounts.yaotoshi.xyz}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7768,http://localhost:7769,https://accounts.yaotoshi.xyz}
+      ISSUER_URL: ${ISSUER_URL:-http://localhost:7768}
       SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret}
     depends_on:
       postgres:

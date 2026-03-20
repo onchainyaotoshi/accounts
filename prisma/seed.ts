@@ -57,8 +57,8 @@ async function main() {
         slug: 'demo-client',
         clientId,
         type: 'PUBLIC',
-        redirectUris: ['http://localhost:3002/callback'],
-        postLogoutRedirectUris: ['http://localhost:3002'],
+        redirectUris: ['http://localhost:3002/callback', 'http://localhost:7769/callback'],
+        postLogoutRedirectUris: ['http://localhost:3002', 'http://localhost:7769'],
         scopes: ['openid', 'email'],
       },
     });

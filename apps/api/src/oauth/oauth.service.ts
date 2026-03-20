@@ -7,6 +7,7 @@ import { createHash } from 'crypto';
 import { PrismaService } from '../common/prisma.service';
 import { ClientsService } from '../clients/clients.service';
 import { AuditService } from '../audit/audit.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { generateToken, hashToken } from '../common/utils/crypto';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class OAuthService {
   constructor(
     private prisma: PrismaService,
     private clientsService: ClientsService,
+    private sessionsService: SessionsService,
     private auditService: AuditService,
   ) {}
 
@@ -120,6 +122,38 @@ export class OAuthService {
       expires_in: 30 * 24 * 60 * 60,
       scope: authCode.scope,
     };
+  }
+
+  async handleLogout(params: {
+    token?: string;
+    cookieToken?: string;
+    clientId?: string;
+    postLogoutRedirectUri?: string;
+  }): Promise<string> {
+    // Revoke the token-based session if provided
+    if (params.token) {
+      await this.sessionsService.revokeByToken(params.token);
+    }
+
+    // Revoke the cookie-based session if present
+    if (params.cookieToken && params.cookieToken !== params.token) {
+      await this.sessionsService.revokeByToken(params.cookieToken);
+    }
+
+    // Determine redirect destination
+    if (params.clientId && params.postLogoutRedirectUri) {
+      const isValid =
+        await this.clientsService.validatePostLogoutRedirectUri(
+          params.clientId,
+          params.postLogoutRedirectUri,
+        );
+      if (isValid) {
+        return params.postLogoutRedirectUri;
+      }
+    }
+
+    // Default: redirect to login page
+    return '/login';
   }
 
   async getUserInfo(token: string) {

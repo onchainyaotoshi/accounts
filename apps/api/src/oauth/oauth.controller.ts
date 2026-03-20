@@ -83,6 +83,34 @@ export class OAuthController {
     });
   }
 
+  @Get('logout')
+  async logout(
+    @Query('post_logout_redirect_uri') postLogoutRedirectUri: string,
+    @Query('client_id') clientId: string,
+    @Query('token') token: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const cookieToken = req.cookies?.session_token;
+
+    const redirectTo = await this.oauthService.handleLogout({
+      token,
+      cookieToken,
+      clientId,
+      postLogoutRedirectUri,
+    });
+
+    // Clear the session cookie
+    res.clearCookie('session_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return res.redirect(redirectTo);
+  }
+
   @Get('me')
   async me(@Req() req: Request) {
     const token =

@@ -19,7 +19,22 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3001'],
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin) return callback(null, true);
+
+      const allowedList =
+        process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3001'];
+      if (allowedList.includes(origin)) return callback(null, true);
+
+      if (/^https:\/\/[\w-]+\.yaotoshi\.xyz$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (/^http:\/\/localhost:\d+$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   });
 

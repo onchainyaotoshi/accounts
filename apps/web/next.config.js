@@ -7,6 +7,10 @@ const nextConfig = {
         source: '/api/proxy/:path*',
         destination: `${apiUrl}/:path*`,
       },
+      {
+        source: '/.well-known/:path*',
+        destination: `${apiUrl}/.well-known/:path*`,
+      },
     ];
   },
 };
