@@ -11,12 +11,14 @@ export default function ClientsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [createdSecret, setCreatedSecret] = useState<string | null>(null);
 
   // Create form
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [type, setType] = useState('web');
+  const [type, setType] = useState<string>('PUBLIC');
   const [redirectUris, setRedirectUris] = useState('');
+  const [postLogoutRedirectUris, setPostLogoutRedirectUris] = useState('');
 
   const load = async () => {
     try {
@@ -37,12 +39,26 @@ export default function ClientsPage() {
         .split('\n')
         .map((u) => u.trim())
         .filter(Boolean);
-      await admin.createClient({ name, slug, type, redirectUris: uris });
+      const logoutUris = postLogoutRedirectUris
+        .split('\n')
+        .map((u) => u.trim())
+        .filter(Boolean);
+      const result = await admin.createClient({
+        name,
+        slug,
+        type,
+        redirectUris: uris,
+        postLogoutRedirectUris: logoutUris,
+      });
+      if (result.clientSecret) {
+        setCreatedSecret(result.clientSecret);
+      }
       setShowCreate(false);
       setName('');
       setSlug('');
-      setType('web');
+      setType('PUBLIC');
       setRedirectUris('');
+      setPostLogoutRedirectUris('');
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create client');
@@ -79,22 +95,52 @@ export default function ClientsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold">{client.name}</h3>
                     <span className="badge-neutral">{client.type}</span>
+                    <span className={client.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}>
+                      {client.status}
+                    </span>
                   </div>
                   <p className="mt-1 text-sm text-text-tertiary">{client.slug}</p>
                 </div>
               </div>
               <div className="mt-4 space-y-2">
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-text-tertiary w-20 shrink-0">Client ID</span>
+                  <span className="text-text-tertiary w-28 shrink-0">Client ID</span>
                   <code className="font-mono text-text-secondary bg-surface-2 px-2 py-0.5 rounded break-all">
                     {client.clientId}
                   </code>
                 </div>
+                {client.scopes?.length > 0 && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-text-tertiary w-28 shrink-0">Scopes</span>
+                    <div className="flex gap-1 flex-wrap">
+                      {client.scopes.map((scope, i) => (
+                        <code key={i} className="font-mono text-text-secondary bg-surface-2 px-2 py-0.5 rounded">
+                          {scope}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {client.redirectUris?.length > 0 && (
                   <div className="flex items-start gap-2 text-xs">
-                    <span className="text-text-tertiary w-20 shrink-0 pt-0.5">Redirects</span>
+                    <span className="text-text-tertiary w-28 shrink-0 pt-0.5">Redirect URIs</span>
                     <div className="space-y-1">
                       {client.redirectUris.map((uri, i) => (
+                        <code
+                          key={i}
+                          className="block font-mono text-text-secondary bg-surface-2 px-2 py-0.5 rounded break-all"
+                        >
+                          {uri}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {client.postLogoutRedirectUris?.length > 0 && (
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-text-tertiary w-28 shrink-0 pt-0.5">Logout URIs</span>
+                    <div className="space-y-1">
+                      {client.postLogoutRedirectUris.map((uri, i) => (
                         <code
                           key={i}
                           className="block font-mono text-text-secondary bg-surface-2 px-2 py-0.5 rounded break-all"
@@ -111,6 +157,7 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {/* Create Client Modal */}
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Register Client">
         <form onSubmit={handleCreate} className="space-y-4">
           {error && (
@@ -148,10 +195,8 @@ export default function ClientsPage() {
               onChange={(e) => setType(e.target.value)}
               className="input-field"
             >
-              <option value="web">Web</option>
-              <option value="native">Native</option>
-              <option value="spa">SPA</option>
-              <option value="service">Service</option>
+              <option value="PUBLIC">Public</option>
+              <option value="CONFIDENTIAL">Confidential</option>
             </select>
           </div>
           <div>
@@ -162,7 +207,19 @@ export default function ClientsPage() {
               value={redirectUris}
               onChange={(e) => setRedirectUris(e.target.value)}
               className="input-field min-h-[80px] font-mono text-xs"
-              placeholder={"https://myapp.com/callback\nhttp://localhost:3000/callback"}
+              placeholder={"https://myapp.yaotoshi.xyz/callback\nhttp://localhost:3000/callback"}
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">
+              Post-Logout Redirect URIs <span className="text-text-tertiary">(one per line)</span>
+            </label>
+            <textarea
+              value={postLogoutRedirectUris}
+              onChange={(e) => setPostLogoutRedirectUris(e.target.value)}
+              className="input-field min-h-[80px] font-mono text-xs"
+              placeholder={"https://myapp.yaotoshi.xyz\nhttp://localhost:3000"}
               rows={3}
             />
           </div>
@@ -175,6 +232,27 @@ export default function ClientsPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Client Secret Modal */}
+      <Modal
+        open={!!createdSecret}
+        onClose={() => setCreatedSecret(null)}
+        title="Client Secret"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Copy this secret now. It will not be shown again.
+          </p>
+          <code className="block font-mono text-sm bg-surface-2 px-4 py-3 rounded-lg break-all text-text-primary">
+            {createdSecret}
+          </code>
+          <div className="flex justify-end">
+            <button className="btn-primary" onClick={() => setCreatedSecret(null)}>
+              Done
+            </button>
+          </div>
+        </div>
       </Modal>
     </>
   );

@@ -80,6 +80,7 @@ export class ClientsService {
           clientId: true,
           type: true,
           redirectUris: true,
+          postLogoutRedirectUris: true,
           scopes: true,
           status: true,
           createdAt: true,

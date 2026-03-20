@@ -113,6 +113,9 @@ export interface Client {
   clientId: string;
   clientSecret?: string;
   redirectUris: string[];
+  postLogoutRedirectUris: string[];
+  scopes: string[];
+  status: string;
   createdAt: string;
 }
 
@@ -145,9 +148,9 @@ export const admin = {
   revokeInvite: (id: string) =>
     api(`/admin/invites/${id}/revoke`, { method: 'POST' }),
   clients: () => api<{ clients: Client[]; total: number }>('/admin/clients'),
-  createClient: (data: { name: string; slug: string; type: string; redirectUris: string[] }) =>
-    api<Client>('/admin/clients', { method: 'POST', body: JSON.stringify(data) }),
-  updateClient: (id: string, data: Partial<{ name: string; redirectUris: string[] }>) =>
+  createClient: (data: { name: string; slug: string; type?: string; redirectUris: string[]; postLogoutRedirectUris?: string[]; scopes?: string[] }) =>
+    api<{ client: Client; clientSecret?: string }>('/admin/clients', { method: 'POST', body: JSON.stringify(data) }),
+  updateClient: (id: string, data: Partial<{ name: string; redirectUris: string[]; status: string }>) =>
     api<Client>(`/admin/clients/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   auditLogs: () => api<{ logs: AuditLog[]; total: number }>('/admin/audit-logs'),
 };
