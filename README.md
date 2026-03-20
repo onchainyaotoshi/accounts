@@ -36,13 +36,15 @@ The API auto-runs database migrations and starts in watch mode.
 |----------|-------|
 | Admin login | `admin@yaotoshi.xyz` / `admin12345678` |
 | Invite code | `YAOTOSHI1` |
-| Demo client | Configured for `http://localhost:3002` |
+| Demo client | Configured for `http://localhost:3002` and `http://localhost:7769` |
 
 ### Access Points
 
 | Service | URL |
 |---------|-----|
-| API | http://localhost:3000 |
+| API | http://localhost:7767 |
+| Web (accounts UI) | http://localhost:7768 |
+| Demo client | http://localhost:7769 |
 | MailHog UI | http://localhost:8025 |
 | PostgreSQL | localhost:5435 |
 
@@ -51,18 +53,22 @@ The API auto-runs database migrations and starts in watch mode.
 ```
 accounts/
 ├── apps/
-│   └── api/                    # NestJS backend
-│       └── src/
-│           ├── auth/           # Login, signup, password reset
-│           ├── oauth/          # Authorization code + PKCE, /me
-│           ├── sessions/       # User session management
-│           ├── admin/          # Admin API (users, invites, clients, audit)
-│           ├── users/          # User service
-│           ├── invites/        # Invite code service
-│           ├── clients/        # OAuth client service
-│           ├── audit/          # Audit logging service
-│           ├── health/         # Health check endpoints
-│           └── common/         # Guards, decorators, crypto, Prisma
+│   ├── api/                    # NestJS backend
+│   │   └── src/
+│   │       ├── auth/           # Login, signup, password reset
+│   │       ├── oauth/          # Authorization code + PKCE, /me, logout, OIDC discovery
+│   │       ├── sessions/       # User session management
+│   │       ├── admin/          # Admin API (users, invites, clients, audit)
+│   │       ├── users/          # User service
+│   │       ├── invites/        # Invite code service
+│   │       ├── clients/        # OAuth client service
+│   │       ├── audit/          # Audit logging service
+│   │       ├── health/         # Health check endpoints
+│   │       └── common/         # Guards, decorators, crypto, Prisma
+│   ├── web/                    # Next.js frontend (accounts UI)
+│   └── demo-client/            # Vite demo app for testing SSO
+├── packages/
+│   └── auth-sdk/               # @yaotoshi/auth-sdk (published to npm)
 ├── prisma/
 │   ├── schema.prisma           # Database schema
 │   ├── migrations/             # Migration history
@@ -70,10 +76,9 @@ accounts/
 ├── infra/
 │   ├── docker/Dockerfile.api   # API container image
 │   └── nginx/                  # Reverse proxy config (pending)
-├── mcp/                        # MCP tool integration (pending)
+├── mcp/                        # MCP server for admin operations
 ├── docs/                       # Architecture and operations docs
-├── skills/                     # Claude Code skill definitions
-├── scripts/                    # Utility scripts
+├── scripts/                    # Utility scripts (setup-mcp.sh, etc.)
 ├── docker-compose.yml
 ├── package.json
 └── pnpm-workspace.yaml
@@ -90,12 +95,14 @@ accounts/
 | POST | /auth/forgot-password | Request reset token |
 | POST | /auth/reset-password | Reset password |
 
-### OAuth
+### OAuth / SSO
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /authorize | Authorization code request (PKCE) |
 | POST | /token | Exchange code for access token |
 | GET | /me | Current user info |
+| GET | /logout | RP-initiated logout (revoke session + redirect) |
+| GET | /.well-known/openid-configuration | OIDC discovery document |
 
 ### Sessions
 | Method | Path | Description |
@@ -123,6 +130,45 @@ accounts/
 |--------|------|-------------|
 | GET | /health | Process health |
 | GET | /ready | Database connectivity |
+
+## Integrating with External Apps
+
+Install the SDK:
+
+```bash
+pnpm add @yaotoshi/auth-sdk
+```
+
+Usage:
+
+```ts
+import { YaotoshiAuth } from '@yaotoshi/auth-sdk';
+
+const auth = new YaotoshiAuth({
+  clientId: 'YOUR_CLIENT_ID',
+  redirectUri: 'https://myapp.yaotoshi.xyz/callback',
+  postLogoutRedirectUri: 'https://myapp.yaotoshi.xyz',
+  accountsUrl: 'https://accounts.yaotoshi.xyz',
+});
+
+auth.login();                          // redirect to accounts
+const { user } = await auth.handleCallback(); // on /callback page
+auth.logout();                         // clear + redirect to accounts
+auth.isAuthenticated();                // sync check
+auth.getAccessToken();                 // stored token
+```
+
+Register a client via the admin UI at `/admin/clients` or via `POST /admin/clients`.
+
+## MCP Setup
+
+Register the accounts MCP server globally for Claude Code:
+
+```bash
+./scripts/setup-mcp.sh
+```
+
+Requires `ADMIN_PASSWORD` in `.env` or exported. Restart Claude Code after running.
 
 ## Commands
 
