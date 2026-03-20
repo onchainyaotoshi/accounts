@@ -1,2 +1,0 @@
-- [feedback_git_push.md](feedback_git_push.md) — How to push to GitHub from this environment (use token from gh config, not git push directly)
-- [project_sdk_published.md](project_sdk_published.md) — @yaotoshi/auth-sdk is public on npm, avoid breaking changes
