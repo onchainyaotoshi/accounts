@@ -1,3 +1,4 @@
+/** Configuration for YaotoshiAuth client. */
 export interface YaotoshiAuthConfig {
   clientId: string;
   redirectUri: string;
