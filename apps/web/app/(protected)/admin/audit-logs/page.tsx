@@ -14,26 +14,37 @@ function formatTimestamp(date: string) {
   });
 }
 
-const actionColors: Record<string, string> = {
-  login: 'badge-success',
-  logout: 'badge-neutral',
-  signup: 'badge-accent',
-  'password.reset': 'badge-neutral',
-  'password.forgot': 'badge-neutral',
-  'session.revoke': 'badge-danger',
-  'invite.create': 'badge-accent',
-  'invite.revoke': 'badge-danger',
-  'client.create': 'badge-accent',
-  'client.update': 'badge-neutral',
+const eventColors: Record<string, string> = {
+  LOGIN_SUCCESS: 'badge-success',
+  LOGIN_FAILED: 'badge-danger',
+  LOGOUT: 'badge-neutral',
+  SIGNUP: 'badge-accent',
+  PASSWORD_RESET_REQUEST: 'badge-neutral',
+  PASSWORD_RESET_COMPLETE: 'badge-neutral',
+  SESSION_REVOKED: 'badge-danger',
+  ALL_SESSIONS_REVOKED: 'badge-danger',
+  INVITE_CREATED: 'badge-accent',
+  INVITE_USED: 'badge-success',
+  INVITE_REVOKED: 'badge-danger',
+  CLIENT_CREATED: 'badge-accent',
+  CLIENT_UPDATED: 'badge-neutral',
+  AUTH_CODE_ISSUED: 'badge-neutral',
+  TOKEN_ISSUED: 'badge-success',
 };
+
+function formatEventType(eventType: string) {
+  return eventType.toLowerCase().replace(/_/g, ' ');
+}
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     admin.auditLogs().then((res) => {
       setLogs(res.logs || []);
+      setTotal(res.total || 0);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -42,7 +53,7 @@ export default function AuditLogsPage() {
     <>
       <PageHeader
         title="Audit Logs"
-        description="Security events and administrative actions"
+        description={total > 0 ? `${total} events recorded` : 'Security events and administrative actions'}
       />
 
       {loading ? (
@@ -59,9 +70,9 @@ export default function AuditLogsPage() {
             <thead>
               <tr className="border-b border-border text-left text-xs font-semibold uppercase tracking-widest text-text-tertiary">
                 <th className="px-5 py-3">Time</th>
-                <th className="px-5 py-3">Action</th>
-                <th className="px-5 py-3">Actor</th>
-                <th className="px-5 py-3">Target</th>
+                <th className="px-5 py-3">Event</th>
+                <th className="px-5 py-3">User</th>
+                <th className="px-5 py-3">Client</th>
                 <th className="px-5 py-3">IP</th>
               </tr>
             </thead>
@@ -72,25 +83,24 @@ export default function AuditLogsPage() {
                     {formatTimestamp(log.createdAt)}
                   </td>
                   <td className="px-5 py-3">
-                    <span className={actionColors[log.action] || 'badge-neutral'}>
-                      {log.action}
+                    <span className={eventColors[log.eventType] || 'badge-neutral'}>
+                      {formatEventType(log.eventType)}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-text-secondary">
-                    {log.actorEmail || log.actorId || <span className="text-text-tertiary">System</span>}
+                    {log.user?.email || (log.userId ? <span className="font-mono text-xs text-text-tertiary">{log.userId.slice(0, 8)}…</span> : <span className="text-text-tertiary">—</span>)}
                   </td>
                   <td className="px-5 py-3 text-text-secondary">
-                    {log.targetType ? (
-                      <span className="font-mono text-xs">
-                        {log.targetType}
-                        {log.targetId && <span className="text-text-tertiary">:{log.targetId.slice(0, 8)}</span>}
-                      </span>
+                    {log.client ? (
+                      <span className="text-xs">{log.client.name}</span>
+                    ) : log.clientId ? (
+                      <span className="font-mono text-xs text-text-tertiary">{log.clientId.slice(0, 8)}…</span>
                     ) : (
-                      <span className="text-text-tertiary">-</span>
+                      <span className="text-text-tertiary">—</span>
                     )}
                   </td>
                   <td className="px-5 py-3 text-text-tertiary font-mono text-xs">
-                    {log.ipAddress || '-'}
+                    {log.ipAddress || '—'}
                   </td>
                 </tr>
               ))}

@@ -130,14 +130,15 @@ export interface AdminUser {
 
 export interface AuditLog {
   id: string;
-  action: string;
-  actorId?: string;
-  actorEmail?: string;
-  targetType?: string;
-  targetId?: string;
-  metadata?: Record<string, unknown>;
+  eventType: string;
+  userId?: string;
+  clientId?: string;
   ipAddress?: string;
+  userAgent?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
+  user?: { email: string };
+  client?: { name: string; slug: string };
 }
 
 export const admin = {

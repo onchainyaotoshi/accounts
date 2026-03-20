@@ -52,11 +52,18 @@ export class AuditService {
   }
 
   async listAll(skip = 0, take = 50) {
-    return this.prisma.auditLog.findMany({
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-      include: { user: { select: { email: true } } },
-    });
+    const [logs, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: {
+          user: { select: { email: true } },
+          client: { select: { name: true, slug: true } },
+        },
+      }),
+      this.prisma.auditLog.count(),
+    ]);
+    return { logs, total };
   }
 }
