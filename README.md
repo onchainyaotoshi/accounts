@@ -25,7 +25,7 @@ ADMIN_PASSWORD=your-password
 # Invite code — give this to people so they can sign up
 SEED_INVITE_CODE=YOUR-INVITE-CODE
 
-# Port — change if 7768 is taken. This is the port you'll tunnel/expose.
+# Port for the web UI (default: 9999)
 WEB_PORT=9999
 ```
 
