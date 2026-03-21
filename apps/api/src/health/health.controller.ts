@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { PrismaService } from '../common/prisma.service';
 
 @SkipThrottle()
@@ -13,11 +14,12 @@ export class HealthController {
   }
 
   @Get('ready')
-  async ready() {
+  async ready(@Res({ passthrough: true }) res: Response) {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
       return { status: 'ready', database: 'connected' };
     } catch {
+      res.status(503);
       return { status: 'not_ready', database: 'disconnected' };
     }
   }

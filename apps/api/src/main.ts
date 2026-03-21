@@ -26,7 +26,7 @@ async function bootstrap() {
         process.env.CORS_ORIGINS?.split(',') || ['http://localhost:7768'];
       if (allowedList.includes(origin)) return callback(null, true);
 
-      if (process.env.NODE_ENV !== 'production' && /^https:\/\/[\w-]+\.yaotoshi\.xyz$/.test(origin)) {
+      if (process.env.NODE_ENV === 'development' && /^https:\/\/[\w-]+\.yaotoshi\.xyz$/.test(origin)) {
         return callback(null, true);
       }
 

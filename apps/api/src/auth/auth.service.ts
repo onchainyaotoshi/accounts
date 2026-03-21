@@ -36,7 +36,7 @@ export class AuthService {
         eventType: 'LOGIN_FAILED',
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
-        metadata: { email: params.email, reason: 'user_not_found' },
+        metadata: { email: params.email.substring(0, 255), reason: 'user_not_found' },
       });
       throw new UnauthorizedException('Invalid email or password');
     }

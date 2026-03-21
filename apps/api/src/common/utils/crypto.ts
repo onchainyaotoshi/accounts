@@ -27,10 +27,13 @@ export function hashToken(token: string): string {
 
 export function generateCode(length = 8): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = randomBytes(length);
+  const maxValid = Math.floor(256 / chars.length) * chars.length;
   let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars[bytes[i] % chars.length];
+  while (result.length < length) {
+    const byte = randomBytes(1)[0];
+    if (byte < maxValid) {
+      result += chars[byte % chars.length];
+    }
   }
   return result;
 }
