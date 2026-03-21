@@ -161,6 +161,11 @@ const auth = new YaotoshiAuth({
 
 This SDK requires `window`, `localStorage`, `sessionStorage`, and `crypto.subtle`. It is designed for browser environments only.
 
+## Links
+
+- [GitHub](https://github.com/onchainyaotoshi/accounts)
+- [npm](https://www.npmjs.com/package/@yaotoshi/auth-sdk)
+
 ## License
 
 MIT
