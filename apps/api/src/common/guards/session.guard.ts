@@ -16,7 +16,10 @@ export class SessionGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const token =
       request.cookies?.session_token ||
-      request.headers.authorization?.replace('Bearer ', '');
+      (() => {
+        const match = request.headers.authorization?.match(/^Bearer\s+(.+)$/);
+        return match?.[1];
+      })();
 
     if (!token) {
       throw new UnauthorizedException('No session token provided');

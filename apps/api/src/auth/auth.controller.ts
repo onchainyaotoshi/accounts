@@ -47,9 +47,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token =
-      req.cookies?.session_token ||
-      req.headers.authorization?.replace('Bearer ', '');
+    const match = req.headers.authorization?.match(/^Bearer\s+(.+)$/);
+    const token = req.cookies?.session_token || match?.[1];
 
     if (token) {
       await this.authService.logout(token, req.ip, req.headers['user-agent']);
