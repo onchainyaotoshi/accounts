@@ -58,8 +58,14 @@ export class AuthStorage {
   }
 
   clearAll(): void {
-    this.remove('code_verifier');
-    this.remove('state');
-    this.removePersistent('access_token');
+    try {
+      const prefix = this.prefix + '_';
+      for (const store of [sessionStorage, localStorage]) {
+        const keys = Object.keys(store).filter(k => k.startsWith(prefix));
+        keys.forEach(k => store.removeItem(k));
+      }
+    } catch {
+      // Storage unavailable
+    }
   }
 }

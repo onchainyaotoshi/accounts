@@ -1,11 +1,22 @@
 /** Configuration options for the YaotoshiAuth client. */
 export interface YaotoshiAuthConfig {
+  /** OAuth client ID */
   clientId: string;
+  /** OAuth redirect URI for callback */
   redirectUri: string;
+  /** URI to redirect to after logout */
   postLogoutRedirectUri?: string;
+  /** Base URL of the accounts service (e.g., "https://accounts.example.com") */
   accountsUrl: string;
+  /** OAuth scopes to request (default: ['openid', 'email']) */
   scopes?: string[];
+  /** Prefix for storage keys (default: 'yaotoshi_auth') */
   storagePrefix?: string;
+  /**
+   * API path prefix. Set to '/api/proxy' when using the Next.js proxy (default),
+   * or '' when connecting directly to the API.
+   */
+  apiPathPrefix?: string;
 }
 
 export interface TokenResponse {
@@ -15,6 +26,7 @@ export interface TokenResponse {
   scope: string;
 }
 
+/** User info returned by the /me endpoint. `sub` is the user's unique ID (cuid). */
 export interface UserInfo {
   sub: string;
   email: string;
@@ -23,5 +35,9 @@ export interface UserInfo {
 
 export interface AuthResult {
   accessToken: string;
+  /** Granted scopes (may differ from requested scopes) */
+  scope: string;
+  /** Token lifetime in seconds */
+  expiresIn: number;
   user: UserInfo;
 }
