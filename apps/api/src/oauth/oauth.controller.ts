@@ -89,11 +89,12 @@ export class OAuthController {
     });
   }
 
-  @Get('logout')
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
   async logout(
-    @Query('post_logout_redirect_uri') postLogoutRedirectUri: string,
-    @Query('client_id') clientId: string,
-    @Query('token') token: string,
+    @Body('post_logout_redirect_uri') postLogoutRedirectUri: string,
+    @Body('client_id') clientId: string,
+    @Body('token') token: string,
     @Req() req: Request,
     @Res() res: Response,
   ) {

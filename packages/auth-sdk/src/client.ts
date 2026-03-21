@@ -119,14 +119,24 @@ export class YaotoshiAuth {
     const token = this.getAccessToken();
     this.storage.clearAll();
 
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (this.config.clientId) params.set('client_id', this.config.clientId);
-    if (this.config.postLogoutRedirectUri) {
-      params.set('post_logout_redirect_uri', this.config.postLogoutRedirectUri);
-    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${this.config.accountsUrl}/api/proxy/logout`;
 
-    window.location.href = `${this.config.accountsUrl}/api/proxy/logout?${params.toString()}`;
+    const addField = (name: string, value: string) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+
+    if (token) addField('token', token);
+    if (this.config.clientId) addField('client_id', this.config.clientId);
+    if (this.config.postLogoutRedirectUri) addField('post_logout_redirect_uri', this.config.postLogoutRedirectUri);
+
+    document.body.appendChild(form);
+    form.submit();
   }
 
   isAuthenticated(): boolean {
