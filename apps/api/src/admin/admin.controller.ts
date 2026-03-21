@@ -40,8 +40,8 @@ export class AdminController {
   @Get('users')
   async listUsers(@Query('skip') skip?: string, @Query('take') take?: string) {
     return this.usersService.list(
-      skip ? parseInt(skip) : 0,
-      take ? parseInt(take) : 50,
+      Math.max(skip ? parseInt(skip) || 0 : 0, 0),
+      Math.min(take ? parseInt(take) || 50 : 50, 100),
     );
   }
 
@@ -49,8 +49,8 @@ export class AdminController {
   @Get('invites')
   async listInvites(@Query('skip') skip?: string, @Query('take') take?: string) {
     return this.invitesService.list(
-      skip ? parseInt(skip) : 0,
-      take ? parseInt(take) : 50,
+      Math.max(skip ? parseInt(skip) || 0 : 0, 0),
+      Math.min(take ? parseInt(take) || 50 : 50, 100),
     );
   }
 
@@ -136,8 +136,8 @@ export class AdminController {
     @Query('take') take?: string,
   ) {
     return this.auditService.listAll(
-      skip ? parseInt(skip) : 0,
-      take ? parseInt(take) : 50,
+      Math.max(skip ? parseInt(skip) || 0 : 0, 0),
+      Math.min(take ? parseInt(take) || 50 : 50, 100),
     );
   }
 

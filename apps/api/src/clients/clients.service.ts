@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { generateToken, hashToken } from '../common/utils/crypto';
-import { ClientType } from '@prisma/client';
+import { ClientType, ClientStatus } from '@prisma/client';
 
 @Injectable()
 export class ClientsService {
@@ -63,8 +63,15 @@ export class ClientsService {
     return client.postLogoutRedirectUris.includes(postLogoutRedirectUri);
   }
 
-  async update(id: string, data: { name?: string; redirectUris?: string[]; status?: any }) {
-    return this.prisma.client.update({ where: { id }, data });
+  async update(id: string, data: { name?: string; redirectUris?: string[]; status?: ClientStatus }) {
+    return this.prisma.client.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.redirectUris !== undefined && { redirectUris: data.redirectUris }),
+        ...(data.status !== undefined && { status: data.status }),
+      },
+    });
   }
 
   async list(skip = 0, take = 50) {

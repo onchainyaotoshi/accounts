@@ -4,9 +4,11 @@ import {
   IsEmail,
   IsInt,
   Min,
+  Max,
   IsArray,
   IsEnum,
   IsDateString,
+  IsUrl,
 } from 'class-validator';
 import { ClientType, ClientStatus } from '@prisma/client';
 
@@ -18,6 +20,7 @@ export class CreateInviteDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(1000)
   maxUses?: number;
 
   @IsOptional()
@@ -37,7 +40,7 @@ export class CreateClientDto {
   type?: ClientType;
 
   @IsArray()
-  @IsString({ each: true })
+  @IsUrl({}, { each: true })
   redirectUris: string[];
 
   @IsOptional()
@@ -58,7 +61,7 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @IsUrl({}, { each: true })
   redirectUris?: string[];
 
   @IsOptional()
