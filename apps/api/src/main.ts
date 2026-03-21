@@ -23,13 +23,14 @@ async function bootstrap() {
       if (!origin) return callback(null, true);
 
       const allowedList =
-        process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3001'];
+        process.env.CORS_ORIGINS?.split(',') || ['http://localhost:7768'];
       if (allowedList.includes(origin)) return callback(null, true);
 
-      if (/^https:\/\/[\w-]+\.yaotoshi\.xyz$/.test(origin)) {
+      if (process.env.NODE_ENV !== 'production' && /^https:\/\/[\w-]+\.yaotoshi\.xyz$/.test(origin)) {
         return callback(null, true);
       }
-      if (/^http:\/\/localhost:\d+$/.test(origin)) {
+
+      if (process.env.NODE_ENV === 'development' && /^http:\/\/localhost:\d+$/.test(origin)) {
         return callback(null, true);
       }
 
