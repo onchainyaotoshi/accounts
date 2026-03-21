@@ -63,6 +63,7 @@ export class OAuthController {
     @Body('grant_type') grantType: string,
     @Body('code') code: string,
     @Body('client_id') clientId: string,
+    @Body('client_secret') clientSecret: string,
     @Body('redirect_uri') redirectUri: string,
     @Body('code_verifier') codeVerifier: string,
   ) {
@@ -78,6 +79,7 @@ export class OAuthController {
     return this.oauthService.exchangeCode({
       code,
       clientId,
+      clientSecret,
       redirectUri,
       codeVerifier,
     });

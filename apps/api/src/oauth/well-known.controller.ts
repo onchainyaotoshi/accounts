@@ -16,7 +16,7 @@ export class WellKnownController {
       scopes_supported: ['openid', 'email', 'profile'],
       response_types_supported: ['code'],
       grant_types_supported: ['authorization_code'],
-      token_endpoint_auth_methods_supported: ['none'],
+      token_endpoint_auth_methods_supported: ['none', 'client_secret_post'],
       code_challenge_methods_supported: ['S256'],
       subject_types_supported: ['public'],
     };
