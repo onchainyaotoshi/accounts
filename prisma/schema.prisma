@@ -138,7 +138,6 @@ model Session {
   client Client? @relation(fields: [clientId], references: [id])
 
   @@index([userId])
-  @@index([sessionTokenHash])
   @@map("sessions")
 }
 

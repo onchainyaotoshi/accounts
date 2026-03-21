@@ -24,46 +24,6 @@ export class InvitesService {
     });
   }
 
-  async validate(code: string, email?: string) {
-    const invite = await this.prisma.inviteCode.findUnique({
-      where: { code: code.toUpperCase().trim() },
-    });
-
-    if (!invite) {
-      throw new BadRequestException('Invalid invite code');
-    }
-    if (invite.revokedAt) {
-      throw new BadRequestException('Invite code has been revoked');
-    }
-    if (invite.expiresAt && invite.expiresAt < new Date()) {
-      throw new BadRequestException('Invite code has expired');
-    }
-    if (invite.usedCount >= invite.maxUses) {
-      throw new BadRequestException('Invite code has reached maximum uses');
-    }
-    if (invite.assignedEmail && email && invite.assignedEmail !== email.toLowerCase().trim()) {
-      throw new BadRequestException('Invite code is not assigned to this email');
-    }
-
-    return invite;
-  }
-
-  async consume(inviteCodeId: string, userId: string, email: string) {
-    await this.prisma.$transaction([
-      this.prisma.inviteCode.update({
-        where: { id: inviteCodeId },
-        data: { usedCount: { increment: 1 } },
-      }),
-      this.prisma.inviteCodeUsage.create({
-        data: {
-          inviteCodeId,
-          usedByUserId: userId,
-          usedEmail: email.toLowerCase().trim(),
-        },
-      }),
-    ]);
-  }
-
   async revoke(id: string) {
     return this.prisma.inviteCode.update({
       where: { id },
