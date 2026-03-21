@@ -40,7 +40,7 @@ See [Environment Variables](#environment-variables) for the full reference.
 docker compose up -d
 ```
 
-This starts PostgreSQL, the API, the web UI, and MailHog. The API automatically runs database migrations on startup.
+This starts PostgreSQL, the API, and the web UI. The API automatically runs database migrations on startup.
 
 ### 3. Seed the database
 
@@ -302,7 +302,6 @@ The SDK stores access tokens in `localStorage`. This is standard for browser SPA
 | API | http://localhost:7767 | Backend API |
 | Web | http://localhost:7768 | Accounts UI (login, admin panel) |
 | Demo client | http://localhost:7769 | Example app that uses the SDK |
-| MailHog | http://localhost:8025 | Dev email viewer |
 | PostgreSQL | localhost:5435 | Database (bound to 127.0.0.1) |
 
 ## API Endpoints
