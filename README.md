@@ -242,6 +242,45 @@ docker compose exec api npx prisma studio      # Visual DB browser
 
 Users sign up once, log in to any app. Admins manage users, invites, and clients from one place.
 
+**Logout flow:**
+
+```
+With postLogoutRedirectUri set:
+
+  Your App                    Accounts Service
+     │                              │
+     │  1. User clicks logout       │
+     │ ────────────────────────────>│
+     │                              │  2. Session revoked
+     │  3. Redirect back to app     │
+     │ <────────────────────────────│
+     │                              │
+     ▼                              │
+  User is back on your app          │
+  (e.g. app.example.com)            │
+
+
+Without postLogoutRedirectUri:
+
+  Your App                    Accounts Service
+     │                              │
+     │  1. User clicks logout       │
+     │ ────────────────────────────>│
+     │                              │  2. Session revoked
+     │                              │
+     │                              ▼
+     │                          User stays on
+     │                          accounts login page
+     │                          (accounts.example.com/login)
+```
+
+Set `postLogoutRedirectUri` if you want users to return to your app after logout. If not set, they end up on the accounts login page.
+
+To configure:
+- **In SDK:** `postLogoutRedirectUri: 'https://app.example.com'` in the constructor
+- **In admin panel:** Register the same URL in the client's **Post-Logout Redirect URIs**
+- Both must match — the accounts service validates the redirect URL against the registered list
+
 ---
 
 ## Auth SDK (for developers)
