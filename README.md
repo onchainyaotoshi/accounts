@@ -83,6 +83,8 @@ Skip these for local dev. Only set when deploying with a domain name.
 | `APP_NAME` | `Accounts` | Brand name shown in the web UI |
 | `NODE_ENV` | `development` | Set to `production` on real servers |
 | `POSTGRES_PASSWORD` | `accounts_secret` | Database password — change for production |
+| `RESEND_API_KEY` | *(empty)* | Resend API key from resend.com. If not set, reset emails are logged to console |
+| `EMAIL_FROM` | `noreply@example.com` | Sender email address. Must match your verified Resend domain |
 
 ### Example `.env` for production
 
