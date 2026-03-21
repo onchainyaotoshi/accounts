@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { SessionGuard } from '../common/guards/session.guard';
+import { AdminGuard } from '../common/guards/admin.guard';
 import { UsersService } from '../users/users.service';
 import { InvitesService } from '../invites/invites.service';
 import { ClientsService } from '../clients/clients.service';
@@ -25,7 +26,7 @@ import {
 } from './admin.dto';
 
 @Controller('admin')
-@UseGuards(SessionGuard)
+@UseGuards(SessionGuard, AdminGuard)
 export class AdminController {
   constructor(
     private usersService: UsersService,
