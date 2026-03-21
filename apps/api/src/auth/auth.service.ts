@@ -168,10 +168,14 @@ export class AuthService {
 
       const user = await this.usersService.createInTransaction(tx, params.email, params.password);
 
-      await tx.inviteCode.update({
-        where: { id: invite.id },
+      const updated = await tx.inviteCode.updateMany({
+        where: { id: invite.id, usedCount: { lt: invite.maxUses } },
         data: { usedCount: { increment: 1 } },
       });
+
+      if (updated.count === 0) {
+        throw new BadRequestException('Invite code has reached maximum uses');
+      }
 
       await tx.inviteCodeUsage.create({
         data: {
