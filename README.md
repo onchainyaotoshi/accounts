@@ -15,15 +15,19 @@ Centralized authentication service. Invite-only registration, session-based auth
 cp .env.example .env
 ```
 
-Edit `.env` — you only need to set these 3 values:
+Edit `.env`:
 
 ```env
+# Login credentials
 ADMIN_EMAIL=admin@yourteam.com
 ADMIN_PASSWORD=your-password
-SEED_INVITE_CODE=YOUR-INVITE-CODE
-```
 
-That's it for local dev. Everything else has sensible defaults.
+# Invite code — give this to people so they can sign up
+SEED_INVITE_CODE=YOUR-INVITE-CODE
+
+# Port — change if 7768 is taken. This is the port you'll tunnel/expose.
+WEB_PORT=7768
+```
 
 ### 2. Start
 
@@ -39,7 +43,15 @@ docker compose exec api npx prisma db seed
 
 ### 4. Open
 
-Go to **http://localhost:7768** and log in with the email/password you set above.
+Go to **http://localhost:7768** (or whatever `WEB_PORT` you set) and log in with your email/password.
+
+### 5. Cloudflared tunnel
+
+Point your tunnel to the web UI port:
+
+```bash
+cloudflared tunnel --url http://localhost:7768
+```
 
 ---
 
