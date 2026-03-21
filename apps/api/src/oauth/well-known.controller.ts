@@ -6,8 +6,10 @@ import { SkipThrottle } from '@nestjs/throttler';
 export class WellKnownController {
   @Get('openid-configuration')
   getOpenIdConfiguration() {
-    const issuer =
-      process.env.ISSUER_URL || 'https://accounts.yaotoshi.xyz';
+    const issuer = process.env.ISSUER_URL;
+    if (!issuer) {
+      throw new Error('ISSUER_URL environment variable is required');
+    }
 
     return {
       issuer,
