@@ -113,6 +113,31 @@ All security-relevant actions are logged to the `audit_logs` table:
 
 Each audit log records: userId (optional), clientId (optional), eventType, ipAddress, userAgent, metadata (JSON), and timestamp.
 
+## Account Lockout
+
+- **10 consecutive failed logins** triggers a 15-minute lockout
+- Lockout is automatic and auto-unlocks after the timeout
+- The failed attempt counter resets on successful login
+- Password reset also clears the lockout state
+
+## Role-Based Access Control
+
+- `UserRole` enum: `USER`, `ADMIN`
+- All `/admin` endpoints are protected by `AdminGuard`
+- Guards are chained: `SessionGuard` runs first (authenticates), then `AdminGuard` (authorizes)
+
+## Password Requirements
+
+- Minimum length: 8 characters
+- Maximum length: 128 characters
+- Checked against a common password blocklist
+
+## Email Integration
+
+- Password reset emails are sent via **Resend** when `RESEND_API_KEY` is configured
+- Reset link format: `https://example.com/reset-password?token=<token>`
+- If `RESEND_API_KEY` is not set, the reset link is logged to `console.log` as a fallback
+
 ## Anti-Enumeration
 
 - Login errors use a generic message ("Invalid email or password") regardless of whether the email exists

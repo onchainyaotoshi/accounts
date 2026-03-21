@@ -11,13 +11,15 @@ Content-Type: application/json
 
 1. Look up user by email
 2. Check user status is ACTIVE
-3. Verify password with Argon2id
-4. Create session (generate random token, store SHA-256 hash)
-5. Set `session_token` httpOnly cookie (30-day maxAge)
-6. Log `LOGIN_SUCCESS` audit event
-7. Return `{ user: { id, email, status } }`
+3. Check account lockout (10 consecutive failures → 15-minute lockout, auto-unlock)
+4. Verify password with Argon2id
+5. On success, reset failed login counter
+6. Create session (generate random token, store SHA-256 hash)
+7. Set `session_token` httpOnly cookie (30-day maxAge)
+8. Log `LOGIN_SUCCESS` audit event
+9. Return `{ user: { id, email, status } }`
 
-On failure, logs `LOGIN_FAILED` with reason (user_not_found, account_not_active, invalid_password). Response is always a generic "Invalid email or password" to prevent enumeration.
+On failure, increments the failed login counter and logs `LOGIN_FAILED` with reason (user_not_found, account_not_active, invalid_password, account_locked). Response is always a generic "Invalid email or password" to prevent enumeration.
 
 **Rate limit:** 5 requests per 60 seconds.
 
@@ -111,7 +113,7 @@ POST /auth/forgot-password
 ```
 
 - Always returns `{ message: "If the email exists, a reset link has been sent" }` (prevents enumeration)
-- If user exists, creates a PasswordResetToken (1-hour expiry) and logs the token to console (email integration pending)
+- If user exists, creates a PasswordResetToken (1-hour expiry) and sends a reset link via Resend (when `RESEND_API_KEY` is configured; falls back to `console.log`)
 - Logs `PASSWORD_RESET_REQUEST`
 
 **Rate limit:** 3 requests per 60 seconds.
@@ -138,6 +140,8 @@ POST /auth/reset-password
 POST /auth/logout
 Cookie: session_token=<token>
 ```
+
+OAuth logout is also `POST` (not `GET`).
 
 1. Extract token from cookie or Authorization header
 2. Revoke session (set `revokedAt`)
