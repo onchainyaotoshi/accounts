@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { User, UserStatus } from '@prisma/client';
+import { Prisma, User, UserStatus } from '@prisma/client';
 import { hashPassword } from '../common/utils/crypto';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class UsersService {
     });
   }
 
-  async createInTransaction(tx: any, email: string, password: string): Promise<User> {
+  async createInTransaction(tx: Prisma.TransactionClient, email: string, password: string): Promise<User> {
     const passwordHash = await hashPassword(password);
     return tx.user.create({
       data: {
