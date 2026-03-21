@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: infra/docker/Dockerfile.api
     ports:
-      - "127.0.0.1:7767:3000"
+      - "127.0.0.1:${API_PORT:-7767}:3000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-accounts}:${POSTGRES_PASSWORD:-accounts_secret}@postgres:5432/${POSTGRES_DB:-accounts_db}
       NODE_ENV: ${NODE_ENV:-development}
@@ -45,7 +45,7 @@ services:
       context: .
       dockerfile: infra/docker/Dockerfile.web
     ports:
-      - "127.0.0.1:7768:7768"
+      - "127.0.0.1:${WEB_PORT:-7768}:7768"
     environment:
       INTERNAL_API_URL: http://api:3000
       NEXT_PUBLIC_API_URL: http://localhost:7767

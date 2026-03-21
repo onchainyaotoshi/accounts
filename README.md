@@ -47,13 +47,20 @@ Go to **http://localhost:7768** and log in with the email/password you set above
 
 For cloudflared tunnels or reverse proxies, these are the ports you need:
 
-| Service | Port | What it is |
-|---------|------|------------|
-| **Web UI** | `7768` | Login page, admin panel — **this is what you expose to users** |
-| API | `7767` | Backend API (the web UI talks to this internally) |
-| PostgreSQL | `5435` | Database (localhost only, not exposed externally) |
+| Service | Default port | Env var | What it is |
+|---------|-------------|---------|------------|
+| **Web UI** | `7768` | `WEB_PORT` | Login page, admin panel — **this is what you expose to users** |
+| API | `7767` | `API_PORT` | Backend API (the web UI talks to this internally) |
+| PostgreSQL | `5435` | — | Database (localhost only, not exposed externally) |
 
-**For cloudflared:** Point your tunnel to `http://localhost:7768`.
+**For cloudflared:** Point your tunnel to `http://localhost:7768` (or whatever you set `WEB_PORT` to).
+
+To change ports, set them in `.env`:
+
+```env
+WEB_PORT=8080
+API_PORT=8081
+```
 
 ---
 
