@@ -63,7 +63,7 @@ For cloudflared tunnels or reverse proxies, these are the ports you need:
 |---------|-------------|---------|------------|
 | **Web UI** | `7768` | `WEB_PORT` | Login page, admin panel — **this is what you expose to users** |
 | API | `7767` | `API_PORT` | Backend API (the web UI talks to this internally) |
-| PostgreSQL | `5435` | — | Database (localhost only, not exposed externally) |
+| PostgreSQL | `5435` | `DB_PORT` | Database (localhost only, not exposed externally) |
 
 **For cloudflared:** Point your tunnel to `http://localhost:7768` (or whatever you set `WEB_PORT` to).
 
