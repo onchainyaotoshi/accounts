@@ -2,7 +2,7 @@
 
 ## System Overview
 
-accounts.yaotoshi.xyz is a centralized authentication and authorization service for the Yaotoshi ecosystem. It provides user registration (invite-only), session management, and OAuth 2.0 authorization code flow with PKCE for client applications.
+accounts.example.com is a centralized authentication and authorization service for the Yaotoshi ecosystem. It provides user registration (invite-only), session management, and OAuth 2.0 authorization code flow with PKCE for client applications.
 
 **Stack:** NestJS 11 + Prisma 6 + PostgreSQL 16 + Docker Compose + pnpm workspace monorepo.
 

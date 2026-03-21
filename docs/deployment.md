@@ -9,9 +9,9 @@
 | `PORT` | No | `3000` | API listen port |
 | `CORS_ORIGINS` | No | `http://localhost:3001,http://localhost:3002` | Comma-separated allowed origins |
 | `SESSION_SECRET` | Yes | `dev-session-secret` | Secret for session signing |
-| `ADMIN_EMAIL` | No | `admin@yaotoshi.xyz` | Seed admin user email |
-| `ADMIN_PASSWORD` | No | `admin12345678` | Seed admin user password |
-| `SEED_INVITE_CODE` | No | `YAOTOSHI1` | Seed invite code |
+| `ADMIN_EMAIL` | Yes | — | Seed admin user email |
+| `ADMIN_PASSWORD` | Yes | — | Seed admin user password |
+| `SEED_INVITE_CODE` | Yes | — | Seed invite code |
 | `POSTGRES_USER` | No | `accounts` | PostgreSQL user |
 | `POSTGRES_PASSWORD` | No | `accounts_secret` | PostgreSQL password |
 | `POSTGRES_DB` | No | `accounts_db` | PostgreSQL database name |
@@ -60,7 +60,7 @@ cd apps/api && pnpm start:dev
 export DATABASE_URL="postgresql://user:pass@host:5432/accounts_db"
 export NODE_ENV=production
 export SESSION_SECRET="<generate-a-strong-secret>"
-export CORS_ORIGINS="https://app.yaotoshi.xyz"
+export CORS_ORIGINS="https://app.example.com"
 
 # 2. Build the API
 cd apps/api && pnpm build
@@ -92,8 +92,8 @@ DATABASE_URL="..." npx prisma db seed
 ```
 
 The seed script creates:
-- Admin user (`admin@yaotoshi.xyz` / `admin12345678`)
-- Invite code `YAOTOSHI1`
+- Admin user (configured via `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars)
+- Invite code (configured via `SEED_INVITE_CODE` env var)
 - Demo OAuth client configured for `localhost:3002`
 
 ## Backup and Restore

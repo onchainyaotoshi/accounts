@@ -2,7 +2,7 @@
 
 ## Description
 
-Security practices and implementation details for accounts.yaotoshi.xyz.
+Security practices and implementation details for accounts.example.com.
 
 ## Password Security
 

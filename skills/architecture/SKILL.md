@@ -2,7 +2,7 @@
 
 ## Description
 
-Architecture overview for the accounts.yaotoshi.xyz authentication service.
+Architecture overview for the accounts.example.com authentication service.
 
 ## System Overview
 

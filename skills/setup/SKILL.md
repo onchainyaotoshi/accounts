@@ -2,7 +2,7 @@
 
 ## Description
 
-How to set up the accounts.yaotoshi.xyz project for local development.
+How to set up the accounts.example.com project for local development.
 
 ## Prerequisites
 
@@ -59,9 +59,9 @@ docker compose exec api pnpm prisma db seed
 
 | Resource | Value |
 |----------|-------|
-| Admin email | `admin@yaotoshi.xyz` |
-| Admin password | `admin12345678` |
-| Invite code | `YAOTOSHI1` |
+| Admin email | Configured via `ADMIN_EMAIL` env var |
+| Admin password | Configured via `ADMIN_PASSWORD` env var |
+| Invite code | Configured via `SEED_INVITE_CODE` env var |
 | Demo client | Configured for `localhost:3002` |
 
 ### 6. Database Access

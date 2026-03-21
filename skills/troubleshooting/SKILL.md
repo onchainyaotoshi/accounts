@@ -2,7 +2,7 @@
 
 ## Description
 
-Common issues and solutions for the accounts.yaotoshi.xyz project.
+Common issues and solutions for the accounts.example.com project.
 
 ## Service Won't Start
 

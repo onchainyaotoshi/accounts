@@ -1,6 +1,6 @@
 # Tasks
 
-MVP backlog for accounts.yaotoshi.xyz.
+MVP backlog for accounts.example.com.
 
 ## Completed
 

@@ -1,7 +1,7 @@
 [![Publish @yaotoshi/auth-sdk](https://github.com/onchainyaotoshi/accounts/actions/workflows/publish-auth-sdk.yml/badge.svg)](https://github.com/onchainyaotoshi/accounts/actions/workflows/publish-auth-sdk.yml)
 [![npm](https://img.shields.io/npm/v/@yaotoshi/auth-sdk)](https://www.npmjs.com/package/@yaotoshi/auth-sdk)
 
-# accounts.yaotoshi.xyz
+# accounts.example.com
 
 Centralized authentication and authorization service for the Yaotoshi ecosystem.
 
@@ -34,8 +34,8 @@ The API auto-runs database migrations and starts in watch mode.
 
 | Resource | Value |
 |----------|-------|
-| Admin login | `admin@yaotoshi.xyz` / `admin12345678` |
-| Invite code | `YAOTOSHI1` |
+| Admin login | Configured via `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars |
+| Invite code | Configured via `SEED_INVITE_CODE` env var |
 | Demo client | Configured for `http://localhost:3002` and `http://localhost:7769` |
 
 ### Access Points
@@ -146,9 +146,9 @@ import { YaotoshiAuth } from '@yaotoshi/auth-sdk';
 
 const auth = new YaotoshiAuth({
   clientId: 'YOUR_CLIENT_ID',
-  redirectUri: 'https://myapp.yaotoshi.xyz/callback',
-  postLogoutRedirectUri: 'https://myapp.yaotoshi.xyz',
-  accountsUrl: 'https://accounts.yaotoshi.xyz',
+  redirectUri: 'https://myapp.example.com/callback',
+  postLogoutRedirectUri: 'https://myapp.example.com',
+  accountsUrl: 'https://accounts.example.com',
 });
 
 auth.login();                          // redirect to accounts

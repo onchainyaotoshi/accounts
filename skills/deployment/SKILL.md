@@ -2,7 +2,7 @@
 
 ## Description
 
-How to deploy and operate the accounts.yaotoshi.xyz service.
+How to deploy and operate the accounts.example.com service.
 
 ## Development Deployment
 
@@ -20,7 +20,7 @@ Services start automatically: PostgreSQL, API (with auto-migration and hot reloa
 DATABASE_URL="postgresql://user:pass@host:5432/accounts_db"
 NODE_ENV=production
 SESSION_SECRET="<random-64-char-string>"
-CORS_ORIGINS="https://app.yaotoshi.xyz,https://other.yaotoshi.xyz"
+CORS_ORIGINS="https://app.example.com,https://other.example.com"
 PORT=3000
 ```
 
@@ -49,8 +49,8 @@ NODE_ENV=production node apps/api/dist/main.js
 ### Health Verification
 
 ```bash
-curl https://accounts.yaotoshi.xyz/health   # { "status": "ok" }
-curl https://accounts.yaotoshi.xyz/ready     # { "status": "ready", "database": "connected" }
+curl https://accounts.example.com/health   # { "status": "ok" }
+curl https://accounts.example.com/ready     # { "status": "ready", "database": "connected" }
 ```
 
 ## Database Operations
