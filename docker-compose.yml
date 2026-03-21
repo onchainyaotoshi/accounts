@@ -50,6 +50,7 @@ services:
       INTERNAL_API_URL: http://api:3000
       NEXT_PUBLIC_API_URL: http://localhost:7767
       NEXT_PUBLIC_APP_DOMAIN: ${APP_DOMAIN:-}
+      NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Accounts}
     depends_on:
       - api
 

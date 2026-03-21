@@ -10,7 +10,7 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title="Overview"
-        description="Your Yaotoshi account at a glance"
+        description={`Your ${process.env.NEXT_PUBLIC_APP_NAME || 'Accounts'} account at a glance`}
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="card">

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export function AuthLayout({
   children,
@@ -11,6 +12,12 @@ export function AuthLayout({
   title: string;
   subtitle?: string;
 }) {
+  const [appName, setAppName] = useState('Accounts');
+
+  useEffect(() => {
+    setAppName(process.env.NEXT_PUBLIC_APP_NAME || 'Accounts');
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -21,10 +28,10 @@ export function AuthLayout({
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-8 group">
             <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
-              <span className="text-accent font-mono text-sm font-bold">Y</span>
+              <span className="text-accent font-mono text-sm font-bold">{appName.charAt(0).toUpperCase()}</span>
             </div>
             <span className="text-sm text-text-secondary group-hover:text-text-primary transition-colors">
-              yaotoshi
+              {appName.toLowerCase()}
             </span>
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>

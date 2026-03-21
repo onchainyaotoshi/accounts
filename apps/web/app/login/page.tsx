@@ -112,7 +112,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <AuthLayout title="Sign in" subtitle="Access your Yaotoshi account">
+    <AuthLayout title="Sign in" subtitle={`Access your ${process.env.NEXT_PUBLIC_APP_NAME || 'Accounts'} account`}>
       <Suspense
         fallback={
           <div className="flex justify-center py-8">

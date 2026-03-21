@@ -70,7 +70,7 @@ export default function ClientsPage() {
     <>
       <PageHeader
         title="OAuth Clients"
-        description="Registered applications using Yaotoshi auth"
+        description={`Registered applications using ${process.env.NEXT_PUBLIC_APP_NAME || 'Accounts'} auth`}
         action={
           <button className="btn-primary btn-small" onClick={() => setShowCreate(true)}>
             Register client
