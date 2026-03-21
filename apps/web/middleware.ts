@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ALLOWED_ORIGIN_PATTERNS = [
-  /^https:\/\/[\w-]+\.yaotoshi\.xyz$/,
-  /^http:\/\/localhost:\d+$/,
-  /^http:\/\/127\.0\.0\.1:\d+$/,
-];
+const ALLOWED_ORIGIN_PATTERNS: RegExp[] = (() => {
+  const patterns: RegExp[] = [
+    /^http:\/\/localhost:\d+$/,
+    /^http:\/\/127\.0\.0\.1:\d+$/,
+  ];
+  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN;
+  if (appDomain) {
+    const escaped = appDomain.replace(/\./g, '\\.');
+    patterns.unshift(new RegExp(`^https://[\\w-]+\\.${escaped}$`));
+  }
+  return patterns;
+})();
 
 function isAllowedOrigin(origin: string): boolean {
   return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));

@@ -15,11 +15,8 @@ function isAllowedRedirect(url: string): boolean {
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname;
-    // Allow same origin or *.yaotoshi.xyz
-    if (
-      hostname === 'yaotoshi.xyz' ||
-      hostname.endsWith('.yaotoshi.xyz')
-    ) {
+    const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN;
+    if (appDomain && (hostname === appDomain || hostname.endsWith(`.${appDomain}`))) {
       return true;
     }
   } catch {
