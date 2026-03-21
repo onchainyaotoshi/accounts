@@ -168,9 +168,10 @@ export class AuthService {
       ipAddress,
     });
 
-    // TODO: Send email with reset link containing `token`
-    // For dev: log token
-    console.log(`[DEV] Password reset token for ${email}: ${token}`);
+    if (process.env.NODE_ENV === 'development') {
+      // TODO: Send email with reset link containing `token`
+      console.log(`[DEV] Password reset token for ${email}: ${token}`);
+    }
 
     return { message: 'If the email exists, a reset link has been sent' };
   }
