@@ -39,11 +39,14 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException('User account is not active');
     }
 
-    // Update last seen
-    await this.prisma.session.update({
-      where: { id: session.id },
-      data: { lastSeenAt: new Date() },
-    });
+    // Throttle lastSeenAt updates (only if older than 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    if (session.lastSeenAt < fiveMinutesAgo) {
+      await this.prisma.session.update({
+        where: { id: session.id },
+        data: { lastSeenAt: new Date() },
+      });
+    }
 
     (request as any).user = session.user;
     (request as any).session_id = session.id;
