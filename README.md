@@ -7,47 +7,30 @@ Centralized authentication service. Invite-only registration, session-based auth
 
 ---
 
-## Quick Setup
-
-### 1. Configure
+## Setup
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with your values:
 
 ```env
-# Login credentials
 ADMIN_EMAIL=admin@yourteam.com
 ADMIN_PASSWORD=your-password
-
-# Invite code — give this to people so they can sign up
 SEED_INVITE_CODE=YOUR-INVITE-CODE
-
-# Port for the web UI (default: 9999)
-WEB_PORT=9999
 ```
 
-### 2. Start
+Start and seed:
 
 ```bash
 docker compose up -d
+docker compose exec api npx prisma db seed   # first time only
 ```
 
-### 3. Seed the database (first time only)
+Open **http://localhost:9999** and log in.
 
-```bash
-docker compose exec api npx prisma db seed
-```
-
-### 4. Open
-
-Go to **http://localhost:9999** (or whatever `WEB_PORT` you set) and log in with your email/password.
-
-### 5. Cloudflared tunnel
-
-Point your tunnel to the web UI port:
+For cloudflared:
 
 ```bash
 cloudflared tunnel --url http://localhost:9999
@@ -55,65 +38,53 @@ cloudflared tunnel --url http://localhost:9999
 
 ---
 
-## Ports
+## Configuration
 
-For cloudflared tunnels or reverse proxies, these are the ports you need:
+All config is in `.env`. Below is every variable you can set.
 
-| Service | Default port | Env var | What it is |
-|---------|-------------|---------|------------|
-| **Web UI** | `9999` | `WEB_PORT` | Login page, admin panel — **this is what you expose to users** |
-| API | `9998` | `API_PORT` | Backend API (the web UI talks to this internally) |
-| PostgreSQL | `9997` | `DB_PORT` | Database (localhost only, not exposed externally) |
+### Credentials (required, no defaults)
 
-**For cloudflared:** Point your tunnel to `http://localhost:9999` (or whatever you set `WEB_PORT` to).
+| Variable | Description |
+|----------|-------------|
+| `ADMIN_EMAIL` | Admin login email |
+| `ADMIN_PASSWORD` | Admin login password |
+| `SEED_INVITE_CODE` | Invite code for signups — share with your team |
 
-To change ports, set them in `.env`:
+### Ports
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WEB_PORT` | `9999` | Web UI — **point cloudflared here** |
+| `API_PORT` | `9998` | Backend API |
+| `DB_PORT` | `9997` | PostgreSQL |
+
+Example — change web UI to port 8080:
 
 ```env
 WEB_PORT=8080
-API_PORT=8081
 ```
 
----
+Then tunnel with `cloudflared tunnel --url http://localhost:8080`.
 
-## Credentials
+### Domain and CORS (only needed with a real domain)
 
-All set via `.env`. No hardcoded defaults.
+Skip these for local dev. Only set when deploying with a domain name.
 
-| What | Env var | Description |
-|------|---------|-------------|
-| Admin email | `ADMIN_EMAIL` | Email to log in as admin |
-| Admin password | `ADMIN_PASSWORD` | Password to log in |
-| Invite code | `SEED_INVITE_CODE` | Give this to people so they can sign up |
-
-To invite more people after setup, go to **Admin > Invites** in the web UI and create new invite codes.
-
----
-
-## All Environment Variables
-
-Most of these you don't need to touch for local dev. Only change them when deploying to a server with a real domain.
-
-### Must set (no defaults)
-
-| Variable | What it does | Example |
-|----------|-------------|---------|
-| `ADMIN_EMAIL` | Admin login email | `admin@yourteam.com` |
-| `ADMIN_PASSWORD` | Admin login password | `my-password` |
-| `SEED_INVITE_CODE` | First invite code for signups | `WELCOME2024` |
-
-### Optional (have defaults)
-
-| Variable | Default | What it does |
+| Variable | Default | Description |
 |----------|---------|-------------|
-| `NODE_ENV` | `development` | Set to `production` on real servers |
-| `ISSUER_URL` | `http://localhost:9999` | Public URL of the accounts UI. Change this when you have a real domain, e.g. `https://accounts.yourdomain.com` |
-| `APP_DOMAIN` | *(empty)* | Your domain. If set, all `*.yourdomain.com` subdomains can talk to the API. Leave empty for local dev |
-| `CORS_ORIGINS` | `http://localhost:9999,...` | Specific URLs that can talk to the API (comma-separated) |
-| `APP_NAME` | `Accounts` | Name shown in the login page UI |
-| `POSTGRES_PASSWORD` | `accounts_secret` | Database password. Change for production |
+| `ISSUER_URL` | `http://localhost:9999` | Public URL of the web UI. Set to `https://accounts.yourdomain.com` in production |
+| `APP_DOMAIN` | *(empty)* | Your root domain. If set, all `*.yourdomain.com` subdomains can talk to the API |
+| `CORS_ORIGINS` | `http://localhost:9999` | Explicit origins that can talk to the API (comma-separated) |
 
-### Example `.env` for production (with a domain)
+### Other
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APP_NAME` | `Accounts` | Brand name shown in the web UI |
+| `NODE_ENV` | `development` | Set to `production` on real servers |
+| `POSTGRES_PASSWORD` | `accounts_secret` | Database password — change for production |
+
+### Example `.env` for production
 
 ```env
 NODE_ENV=production
@@ -122,22 +93,35 @@ ADMIN_PASSWORD=a-strong-password
 SEED_INVITE_CODE=YOUR-CODE
 ISSUER_URL=https://accounts.yourdomain.com
 APP_DOMAIN=yourdomain.com
-POSTGRES_PASSWORD=a-different-strong-password
+POSTGRES_PASSWORD=a-strong-db-password
 APP_NAME=MyTeam
 ```
 
 ---
 
-## Using the Auth SDK (for developers)
+## Commands
 
-If you want to add login to your own app using this accounts service, use the `@yaotoshi/auth-sdk`.
+```bash
+docker compose up -d              # Start
+docker compose down               # Stop
+docker compose logs -f api        # View logs
+docker compose down -v            # Stop + delete all data
+docker compose exec api npx prisma db seed     # Seed database
+docker compose exec api npx prisma studio      # Visual DB browser
+```
+
+---
+
+## Auth SDK (for developers)
+
+Add login to your own app using `@yaotoshi/auth-sdk`.
 
 <details>
-<summary>Click to expand SDK guide</summary>
+<summary>Expand SDK guide</summary>
 
-### Step 1: Register an OAuth client
+### 1. Register an OAuth client
 
-Go to **http://localhost:9999/admin/clients** and create a new client:
+Go to **Admin > Clients** in the web UI and create a client:
 
 - **Name**: Your app name
 - **Slug**: `my-app`
@@ -145,15 +129,15 @@ Go to **http://localhost:9999/admin/clients** and create a new client:
 - **Redirect URIs**: `http://localhost:3000/callback`
 - **Post-Logout Redirect URIs**: `http://localhost:3000`
 
-Copy the **Client ID** after creating.
+Copy the **Client ID**.
 
-### Step 2: Install
+### 2. Install
 
 ```bash
 npm install @yaotoshi/auth-sdk
 ```
 
-### Step 3: Use it
+### 3. Use
 
 ```ts
 import { YaotoshiAuth } from '@yaotoshi/auth-sdk';
@@ -165,35 +149,25 @@ const auth = new YaotoshiAuth({
   accountsUrl: 'http://localhost:9999',
 });
 
-// Login — redirects user to accounts service
-auth.login();
-
-// On your /callback page — exchanges the code for a token
-const { user } = await auth.handleCallback();
-console.log(user.email);
-
-// Check if logged in
-auth.isAuthenticated(); // true/false (checks token expiry too)
-
-// Get user info
-const user = await auth.getUser();
-
-// Logout — revokes session, clears token, redirects
-await auth.logout();
+auth.login();                                    // redirect to login
+const { user } = await auth.handleCallback();    // on /callback page
+auth.isAuthenticated();                          // check login status
+const user = await auth.getUser();               // get user info
+await auth.logout();                             // logout
 ```
 
 ### Config options
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `clientId` | Yes | — | From the admin UI |
-| `redirectUri` | Yes | — | Your app's callback URL |
-| `accountsUrl` | Yes | — | Where the accounts service runs |
-| `postLogoutRedirectUri` | No | — | Where to go after logout |
-| `scopes` | No | `['openid', 'email']` | What data to request |
-| `apiPathPrefix` | No | `'/api/proxy'` | Set to `''` if connecting directly to the API |
+| `clientId` | Yes | — | OAuth client ID |
+| `redirectUri` | Yes | — | Your callback URL |
+| `accountsUrl` | Yes | — | Accounts service URL |
+| `postLogoutRedirectUri` | No | — | Redirect after logout |
+| `scopes` | No | `['openid', 'email']` | OAuth scopes |
+| `apiPathPrefix` | No | `'/api/proxy'` | Set to `''` for direct API access |
 
-### Full React example
+### React example
 
 ```tsx
 import { YaotoshiAuth } from '@yaotoshi/auth-sdk';
@@ -240,96 +214,74 @@ function Dashboard() {
 }
 ```
 
-### Security note
+### Security
 
-The SDK stores tokens in `localStorage` (same as Auth0, Firebase). If your app has an XSS vulnerability, tokens could be exposed. Mitigate with a strong Content-Security-Policy header.
+Tokens are stored in `localStorage` (same as Auth0, Firebase). Mitigate XSS risk with a strong Content-Security-Policy header.
 
 </details>
 
 ---
 
-## Commands
-
-```bash
-docker compose up -d              # Start
-docker compose down               # Stop
-docker compose logs -f api        # View API logs
-docker compose down -v            # Stop + delete all data
-
-docker compose exec api npx prisma db seed     # Seed database
-docker compose exec api npx prisma studio      # Visual DB browser
-```
-
 ## API Endpoints
 
 <details>
-<summary>Click to expand</summary>
+<summary>Expand</summary>
 
 ### Authentication
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | /auth/login | Email + password login |
-| POST | /auth/logout | End session |
+| POST | /auth/login | Login |
+| POST | /auth/logout | Logout |
 | POST | /auth/signup-with-invite | Register with invite code |
 | POST | /auth/forgot-password | Request password reset |
-| POST | /auth/reset-password | Reset password with token |
+| POST | /auth/reset-password | Reset password |
 
-### OAuth / SSO
+### OAuth
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | /authorize | Start OAuth flow (PKCE required) |
-| POST | /token | Exchange auth code for access token |
-| GET | /me | Get current user info |
-| POST | /logout | Revoke session + redirect |
+| GET | /authorize | Start OAuth flow |
+| POST | /token | Exchange code for token |
+| GET | /me | Get current user |
+| POST | /logout | Revoke session |
 | GET | /.well-known/openid-configuration | OIDC discovery |
 
 ### Sessions
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | /sessions | List your active sessions |
-| DELETE | /sessions/:id | Revoke a session |
-| DELETE | /sessions/others/all | Revoke all other sessions |
+| GET | /sessions | List sessions |
+| DELETE | /sessions/:id | Revoke session |
+| DELETE | /sessions/others/all | Revoke all others |
 
 ### Admin (requires ADMIN role)
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /admin/users | List users |
-| GET | /admin/invites | List invite codes |
-| POST | /admin/invites | Create invite code |
-| POST | /admin/invites/:id/revoke | Revoke invite code |
-| GET | /admin/clients | List OAuth clients |
-| POST | /admin/clients | Register OAuth client |
-| PATCH | /admin/clients/:id | Update OAuth client |
+| GET | /admin/invites | List invites |
+| POST | /admin/invites | Create invite |
+| POST | /admin/invites/:id/revoke | Revoke invite |
+| GET | /admin/clients | List clients |
+| POST | /admin/clients | Register client |
+| PATCH | /admin/clients/:id | Update client |
 | GET | /admin/audit-logs | Query audit logs |
-| GET | /admin/users/:userId/sessions | List user's sessions |
+| GET | /admin/users/:userId/sessions | User sessions |
 | POST | /admin/sessions/:id/revoke | Revoke any session |
 
 ### Health
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | /health | Process health check |
-| GET | /ready | Database connectivity (returns 503 if down) |
+| GET | /health | Health check |
+| GET | /ready | DB connectivity |
 
 </details>
 
-## Deploying to Production
+## Production Deployment
 
 <details>
-<summary>Click to expand</summary>
+<summary>Expand</summary>
 
 ### 1. Set environment variables
 
-```env
-NODE_ENV=production
-ISSUER_URL=https://accounts.yourdomain.com
-APP_DOMAIN=yourdomain.com
-CORS_ORIGINS=https://app.yourdomain.com
-ADMIN_EMAIL=admin@yourdomain.com
-ADMIN_PASSWORD=a-very-strong-password
-SEED_INVITE_CODE=YOUR-FIRST-INVITE
-POSTGRES_PASSWORD=a-different-strong-password
-APP_NAME=YourAppName
-```
+See the [production `.env` example](#example-env-for-production) above.
 
 ### 2. Generate nginx config
 
@@ -338,17 +290,17 @@ ACCOUNTS_HOSTNAME=accounts.yourdomain.com \
   envsubst '${ACCOUNTS_HOSTNAME}' < infra/nginx/accounts.conf.template > infra/nginx/accounts.conf
 ```
 
-### 3. Set up TLS
+### 3. TLS
 
-The nginx template listens on port 80 only. Put it behind a TLS-terminating reverse proxy (e.g., Cloudflare, Caddy, or nginx with certbot).
+The nginx template listens on port 80. Put it behind Cloudflare, Caddy, or nginx with certbot for HTTPS.
 
 </details>
 
-## Documentation
+## Docs
 
-- [Architecture](docs/architecture.md) -- System overview, module boundaries, data model
-- [Auth Flow](docs/auth-flow.md) -- Login, signup, OAuth PKCE flow, session lifecycle
-- [Security](docs/security.md) -- Hashing, PKCE, rate limiting, audit events
-- [Deployment](docs/deployment.md) -- Environment variables, backup/restore, server migration
-- [Tasks](TASKS.md) -- Backlog
-- [Decisions](DECISIONS.md) -- Technical decisions with rationale
+- [Architecture](docs/architecture.md)
+- [Auth Flow](docs/auth-flow.md)
+- [Security](docs/security.md)
+- [Deployment](docs/deployment.md)
+- [Tasks](TASKS.md)
+- [Decisions](DECISIONS.md)
