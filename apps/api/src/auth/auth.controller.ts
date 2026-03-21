@@ -55,7 +55,12 @@ export class AuthController {
       await this.authService.logout(token, req.ip, req.headers['user-agent']);
     }
 
-    res.clearCookie('session_token', { path: '/' });
+    res.clearCookie('session_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
   }
 
   @Post('signup-with-invite')
