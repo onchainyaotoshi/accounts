@@ -171,6 +171,79 @@ docker compose exec api npx prisma studio      # Visual DB browser
 
 ---
 
+## How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Your Domain (example.com)                │
+│                                                                 │
+│  ┌──────────────────┐    ┌──────────────────┐                   │
+│  │  Your App         │    │  Accounts Service │                  │
+│  │  app.example.com  │    │  accounts.example.com               │
+│  │                   │    │                   │                  │
+│  │  - Your app UI    │    │  - Login page     │                  │
+│  │  - Your features  │    │  - Admin panel    │                  │
+│  │  - Uses SDK/API   │    │  - User management│                  │
+│  │                   │    │  - OAuth/PKCE     │                  │
+│  └────────┬──────────┘    └────────┬──────────┘                  │
+│           │                        │                             │
+│           │   1. Login click       │                             │
+│           │ ──────────────────────>│                             │
+│           │                        │  2. User enters             │
+│           │                        │     email + password        │
+│           │   3. Redirect back     │                             │
+│           │   with auth code       │                             │
+│           │ <──────────────────────│                             │
+│           │                        │                             │
+│           │   4. Exchange code     │                             │
+│           │   for access token     │                             │
+│           │ ──────────────────────>│                             │
+│           │                        │                             │
+│           │   5. Token returned    │                             │
+│           │ <──────────────────────│                             │
+│           │                        │                             │
+│           │   6. GET /me           │                             │
+│           │   (who is this user?)  │                             │
+│           │ ──────────────────────>│                             │
+│           │                        │                             │
+│           │   7. User info         │                             │
+│           │   { email, id }        │                             │
+│           │ <──────────────────────│                             │
+│           │                        │                             │
+└───────────┴────────────────────────┴─────────────────────────────┘
+
+         ┌──────────────────────────────┐
+         │         PostgreSQL           │
+         │  - Users                     │
+         │  - Sessions                  │
+         │  - OAuth clients             │
+         │  - Invite codes              │
+         │  - Audit logs                │
+         └──────────────────────────────┘
+```
+
+**Login flow in short:**
+1. User clicks "Sign in" in your app
+2. SDK redirects user to accounts service login page
+3. User logs in with email + password
+4. Accounts service redirects back to your app with a code
+5. SDK exchanges the code for an access token (PKCE protects this)
+6. Your app calls `/me` to get user info
+7. User is now logged in to your app
+
+**Multiple apps, one login:**
+```
+  app.example.com ──────┐
+                        │
+  dashboard.example.com ├──── accounts.example.com ──── PostgreSQL
+                        │         (one login for all)
+  admin.example.com ────┘
+```
+
+Users sign up once, log in to any app. Admins manage users, invites, and clients from one place.
+
+---
+
 ## Auth SDK (for developers)
 
 Add login to your own app using `@yaotoshi/auth-sdk`.
