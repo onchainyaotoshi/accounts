@@ -31,6 +31,9 @@ apps/api/src/
 - **AuthService** orchestrates UsersService, SessionsService, InvitesService, AuditService
 - **OAuthService** orchestrates ClientsService, AuditService, PrismaService
 - **AdminController** aggregates all services directly (thin controller, no AdminService)
+- **AdminGuard** protects all admin endpoints, requiring both SessionGuard authentication and ADMIN role
+- **EmailService** (using Resend integration) handles all transactional email sending
+- **CleanupService** runs daily via cron to expire and clean up obsolete records (old sessions, expired auth codes, etc.)
 - All modules share **PrismaService** as the single database access layer
 
 ## Data Model
@@ -50,8 +53,18 @@ Client (1)──(N) AuditLog
 InviteCode (1)──(N) InviteCodeUsage
 ```
 
+### User Model
+
+The User entity includes:
+- **Basic fields:** email, passwordHash, firstName, lastName
+- **Status:** UserStatus (ACTIVE, SUSPENDED, DELETED)
+- **Role:** UserRole (USER or ADMIN) — determines access to administrative endpoints
+- **Security:** failedLoginAttempts (incremented on failed login), lockedUntil (account lockout timestamp), lastFailedLoginAt (timestamp of most recent failed attempt)
+- **Audit:** createdAt, updatedAt
+
 ### Key Enums
 
+- **UserRole:** USER, ADMIN
 - **UserStatus:** ACTIVE, SUSPENDED, DELETED
 - **ClientType:** PUBLIC, CONFIDENTIAL
 - **ClientStatus:** ACTIVE, INACTIVE

@@ -32,6 +32,7 @@ module-name/
 ### Guards and Decorators
 
 - Use `SessionGuard` for authenticated endpoints
+- Use `@UseGuards(SessionGuard, AdminGuard)` for admin-only endpoints (requires ADMIN role)
 - Use `@CurrentUser()` to extract the authenticated user
 - Use `@CurrentSessionId()` to get the current session ID
 - Use `@Throttle()` for rate-limited endpoints
@@ -42,12 +43,24 @@ module-name/
 - Never expose internal error details to clients
 - Use generic messages for auth failures to prevent enumeration
 
+### Email Sending
+
+- Use `EmailService` for all transactional emails (welcome, password reset, etc.)
+- Never use `console.log` or direct logging for email content
+- EmailService integrates with Resend for reliable delivery
+
 ### Database Access
 
 - All database access goes through `PrismaService`
 - Use Prisma's type-safe query builder
 - Use `$transaction` for operations that must be atomic
 - Use `@map()` in schema for snake_case column names
+
+### Domain Configuration
+
+- Never hardcode domain names like `example.com` in code
+- Always use environment variables (e.g., `process.env.APP_DOMAIN`) for domain references
+- This ensures the service works correctly across dev, staging, and production environments
 
 ## Git Workflow
 
