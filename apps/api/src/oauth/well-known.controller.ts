@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @SkipThrottle()
@@ -8,7 +8,7 @@ export class WellKnownController {
   getOpenIdConfiguration() {
     const issuer = process.env.ISSUER_URL;
     if (!issuer) {
-      throw new Error('ISSUER_URL environment variable is required');
+      throw new InternalServerErrorException('Server configuration error');
     }
 
     return {

@@ -30,7 +30,6 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7768,http://localhost:7769}
       ISSUER_URL: ${ISSUER_URL:-http://localhost:7768}
       APP_DOMAIN: ${APP_DOMAIN:-}
-      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret}
     depends_on:
       postgres:
         condition: service_healthy

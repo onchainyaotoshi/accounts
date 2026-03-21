@@ -7,7 +7,7 @@ import { UsersService } from '../users/users.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { InvitesService } from '../invites/invites.service';
 import { AuditService } from '../audit/audit.service';
-import { verifyPassword, generateToken, hashToken } from '../common/utils/crypto';
+import { verifyPassword, generateToken, hashToken, hashPassword } from '../common/utils/crypto';
 import { isWeakPassword } from '../common/utils/password-check';
 import { PrismaService } from '../common/prisma.service';
 
@@ -50,7 +50,7 @@ export class AuthService {
         userAgent: params.userAgent,
         metadata: { reason: 'account_not_active' },
       });
-      throw new UnauthorizedException('Account is not active');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     const now = new Date();
@@ -146,7 +146,7 @@ export class AuthService {
   }) {
     const existing = await this.usersService.findByEmail(params.email);
     if (existing) {
-      throw new BadRequestException('Email already registered');
+      throw new BadRequestException('Unable to create account');
     }
 
     if (isWeakPassword(params.password)) {
@@ -270,7 +270,6 @@ export class AuthService {
       throw new BadRequestException('Password is too common. Please choose a stronger password.');
     }
 
-    const { hashPassword } = await import('../common/utils/crypto');
     const passwordHash = await hashPassword(params.newPassword);
 
     await this.prisma.$transaction([
