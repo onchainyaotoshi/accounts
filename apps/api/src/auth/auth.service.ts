@@ -91,7 +91,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Reset lockout state on successful login
+    // Reset lockout state and create session atomically
     if (user.failedLoginAttempts > 0) {
       await this.prisma.user.update({
         where: { id: user.id },
@@ -103,7 +103,7 @@ export class AuthService {
       });
     }
 
-    const { session, token } = await this.sessionsService.create({
+    const { token } = await this.sessionsService.create({
       userId: user.id,
       ipAddress: params.ipAddress,
       userAgent: params.userAgent,
@@ -160,12 +160,13 @@ export class AuthService {
         where: { code: params.inviteCode.toUpperCase().trim() },
       });
 
-      if (!invite) throw new BadRequestException('Invalid invite code');
-      if (invite.revokedAt) throw new BadRequestException('Invite code has been revoked');
-      if (invite.expiresAt && invite.expiresAt < new Date()) throw new BadRequestException('Invite code has expired');
-      if (invite.usedCount >= invite.maxUses) throw new BadRequestException('Invite code has reached maximum uses');
+      const invalidMsg = 'Invalid or expired invite code';
+      if (!invite) throw new BadRequestException(invalidMsg);
+      if (invite.revokedAt) throw new BadRequestException(invalidMsg);
+      if (invite.expiresAt && invite.expiresAt < new Date()) throw new BadRequestException(invalidMsg);
+      if (invite.usedCount >= invite.maxUses) throw new BadRequestException(invalidMsg);
       if (invite.assignedEmail && params.email && invite.assignedEmail !== params.email.toLowerCase().trim()) {
-        throw new BadRequestException('Invite code is not assigned to this email');
+        throw new BadRequestException(invalidMsg);
       }
 
       const user = await this.usersService.createInTransaction(tx, params.email, params.password);

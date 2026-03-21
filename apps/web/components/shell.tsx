@@ -83,22 +83,26 @@ export function Shell({ children }: { children: React.ReactNode }) {
               {item.label}
             </Link>
           ))}
-          <div className="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
-            Administration
-          </div>
-          {adminItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
-                isActive(item.href)
-                  ? 'bg-accent/10 text-accent font-medium'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-2'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {user.role === 'ADMIN' && (
+            <>
+              <div className="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+                Administration
+              </div>
+              {adminItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-accent/10 text-accent font-medium'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-2'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
         </nav>
         <div className="p-3 border-t border-border">
           <div className="px-3 py-2">

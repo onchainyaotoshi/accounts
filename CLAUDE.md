@@ -48,4 +48,12 @@ ADMIN_EMAIL, ADMIN_PASSWORD, SEED_INVITE_CODE
 - API paths: `kebab-case`
 - Module structure: `module.ts`, `service.ts`, `controller.ts`, `dto.ts`
 
+## Git Workflow
+
+- Git Flow: `main` (production), `develop` (integration), `feature/*`, `release/*`, `hotfix/*`
+- Conventional commits required (`feat:`, `fix:`, `docs:`, `chore:`, `ci:`, `refactor:`, `test:`, `perf:`)
+- Never commit directly to `main` — only via `release/*` or `hotfix/*` merges
+- Always use `--no-ff` on merges to preserve branch context
+- Semantic versioning auto-determined from commit types
+
 See [docs/development-rules.md](docs/development-rules.md) for full details.

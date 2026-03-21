@@ -11,9 +11,11 @@ export class CleanupService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async cleanupExpiredRecords() {
     const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
-    const [authCodes, resetTokens, sessions] = await Promise.all([
+    const results = await Promise.allSettled([
       // Delete consumed or expired auth codes older than 1 day
       this.prisma.authCode.deleteMany({
         where: {
@@ -21,7 +23,7 @@ export class CleanupService {
             { consumedAt: { not: null } },
             { expiresAt: { lt: now } },
           ],
-          createdAt: { lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+          createdAt: { lt: oneDayAgo },
         },
       }),
       // Delete consumed or expired password reset tokens older than 1 day
@@ -31,7 +33,7 @@ export class CleanupService {
             { consumedAt: { not: null } },
             { expiresAt: { lt: now } },
           ],
-          createdAt: { lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+          createdAt: { lt: oneDayAgo },
         },
       }),
       // Delete revoked or expired sessions older than 30 days
@@ -44,10 +46,21 @@ export class CleanupService {
           createdAt: { lt: thirtyDaysAgo },
         },
       }),
+      // Delete audit logs older than 1 year
+      this.prisma.auditLog.deleteMany({
+        where: {
+          createdAt: { lt: oneYearAgo },
+        },
+      }),
     ]);
 
-    this.logger.log(
-      `Cleanup: ${authCodes.count} auth codes, ${resetTokens.count} reset tokens, ${sessions.count} sessions deleted`,
-    );
+    const labels = ['auth codes', 'reset tokens', 'sessions', 'audit logs'];
+    const summary = results.map((r, i) => {
+      if (r.status === 'fulfilled') return `${r.value.count} ${labels[i]}`;
+      this.logger.error(`Cleanup failed for ${labels[i]}: ${r.reason}`);
+      return `${labels[i]} failed`;
+    });
+
+    this.logger.log(`Cleanup: ${summary.join(', ')} deleted`);
   }
 }

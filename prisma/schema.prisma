@@ -19,43 +19,44 @@ enum UserStatus {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  passwordHash    String    @map("password_hash")
-  role            UserRole  @default(USER)
-  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
-  lockedUntil         DateTime? @map("locked_until")
-  lastFailedLoginAt   DateTime? @map("last_failed_login_at")
-  status          UserStatus @default(ACTIVE)
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                  String     @id @default(cuid())
+  email               String     @unique
+  passwordHash        String     @map("password_hash")
+  role                UserRole   @default(USER)
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  lastFailedLoginAt   DateTime?  @map("last_failed_login_at")
+  status              UserStatus @default(ACTIVE)
+  emailVerifiedAt     DateTime?  @map("email_verified_at")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
 
   sessions            Session[]
-  authCodes            AuthCode[]
+  authCodes           AuthCode[]
   passwordResetTokens PasswordResetToken[]
   auditLogs           AuditLog[]
-  createdInviteCodes  InviteCode[]       @relation("CreatedInvites")
+  createdInviteCodes  InviteCode[]         @relation("CreatedInvites")
   inviteCodeUsages    InviteCodeUsage[]
 
   @@map("users")
 }
 
 model InviteCode {
-  id             String    @id @default(cuid())
-  code           String    @unique
-  createdByUserId String?  @map("created_by_user_id")
-  assignedEmail  String?   @map("assigned_email")
-  maxUses        Int       @default(1) @map("max_uses")
-  usedCount      Int       @default(0) @map("used_count")
-  expiresAt      DateTime? @map("expires_at")
-  revokedAt      DateTime? @map("revoked_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(cuid())
+  code            String    @unique
+  createdByUserId String?   @map("created_by_user_id")
+  assignedEmail   String?   @map("assigned_email")
+  maxUses         Int       @default(1) @map("max_uses")
+  usedCount       Int       @default(0) @map("used_count")
+  expiresAt       DateTime? @map("expires_at")
+  revokedAt       DateTime? @map("revoked_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  createdBy User?             @relation("CreatedInvites", fields: [createdByUserId], references: [id])
+  createdBy User?             @relation("CreatedInvites", fields: [createdByUserId], references: [id], onDelete: SetNull)
   usages    InviteCodeUsage[]
 
+  @@index([createdByUserId])
   @@map("invite_codes")
 }
 
@@ -66,9 +67,11 @@ model InviteCodeUsage {
   usedEmail    String   @map("used_email")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  inviteCode InviteCode @relation(fields: [inviteCodeId], references: [id])
-  usedBy     User       @relation(fields: [usedByUserId], references: [id])
+  inviteCode InviteCode @relation(fields: [inviteCodeId], references: [id], onDelete: Cascade)
+  usedBy     User       @relation(fields: [usedByUserId], references: [id], onDelete: Cascade)
 
+  @@index([inviteCodeId])
+  @@index([usedByUserId])
   @@map("invite_code_usages")
 }
 
@@ -116,9 +119,11 @@ model AuthCode {
   consumedAt          DateTime? @map("consumed_at")
   createdAt           DateTime  @default(now()) @map("created_at")
 
-  user   User   @relation(fields: [userId], references: [id])
-  client Client @relation(fields: [clientId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([clientId])
   @@map("auth_codes")
 }
 
@@ -134,10 +139,11 @@ model Session {
   revokedAt        DateTime? @map("revoked_at")
   createdAt        DateTime  @default(now()) @map("created_at")
 
-  user   User    @relation(fields: [userId], references: [id])
-  client Client? @relation(fields: [clientId], references: [id])
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([clientId])
   @@map("sessions")
 }
 
@@ -149,8 +155,9 @@ model PasswordResetToken {
   consumedAt DateTime? @map("consumed_at")
   createdAt  DateTime  @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("password_reset_tokens")
 }
 
@@ -164,8 +171,8 @@ model AuditLog {
   metadata  Json?    @default("{}")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user   User?   @relation(fields: [userId], references: [id])
-  client Client? @relation(fields: [clientId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([eventType])

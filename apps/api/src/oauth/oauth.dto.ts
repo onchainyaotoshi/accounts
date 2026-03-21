@@ -38,6 +38,7 @@ export class TokenRequestDto {
   grant_type: string;
 
   @IsString()
+  @MaxLength(512)
   code: string;
 
   @IsString()
@@ -46,6 +47,7 @@ export class TokenRequestDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(512)
   client_secret?: string;
 
   @IsString()
@@ -71,5 +73,6 @@ export class LogoutRequestDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(512)
   token?: string;
 }

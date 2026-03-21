@@ -113,6 +113,7 @@ export class OAuthController {
       sub: user.id,
       email: user.email,
       email_verified: !!user.emailVerifiedAt,
+      role: user.role,
     };
   }
 }
