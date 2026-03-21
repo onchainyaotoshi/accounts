@@ -220,11 +220,30 @@ await auth.logout();                             // logout
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
 | `clientId` | Yes | — | OAuth client ID |
-| `redirectUri` | Yes | — | Your callback URL |
+| `redirectUri` | Yes | — | Your callback URL (must be registered in the client) |
 | `accountsUrl` | Yes | — | Accounts service URL |
-| `postLogoutRedirectUri` | No | — | Redirect after logout |
+| `postLogoutRedirectUri` | No | — | Where to redirect after logout. If not set, user stays on the accounts login page after logout. Set this if you want users to return to your app. Must be registered in the client's Post-Logout Redirect URIs |
 | `scopes` | No | `['openid', 'email']` | OAuth scopes |
 | `apiPathPrefix` | No | `'/api/proxy'` | Set to `''` for direct API access |
+
+### Backend integration (without SDK)
+
+If your app has a backend (Node.js, Python, etc.) and you don't use the SDK, you need these env vars:
+
+```env
+ACCOUNTS_URL=https://accounts.example.com    # accounts service URL
+OAUTH_CLIENT_ID=your-client-id               # from Admin > Clients
+OAUTH_REDIRECT_URI=http://localhost:3000/callback  # your callback URL
+OAUTH_POST_LOGOUT_REDIRECT_URI=http://localhost:3000  # optional — where to go after logout
+```
+
+Your backend should:
+1. Redirect users to `{ACCOUNTS_URL}/authorize?client_id=...&redirect_uri=...&response_type=code&code_challenge=...&code_challenge_method=S256&state=...`
+2. Handle the callback: exchange the auth code at `POST {ACCOUNTS_URL}/token`
+3. Validate tokens: call `GET {ACCOUNTS_URL}/me` with `Authorization: Bearer <token>`
+4. Logout: `POST {ACCOUNTS_URL}/logout` with `{ token, client_id, post_logout_redirect_uri }`
+
+`post_logout_redirect_uri` is optional. If not provided, the user stays on the accounts login page after logout. If provided, the user is redirected back to your app.
 
 ### React example
 
