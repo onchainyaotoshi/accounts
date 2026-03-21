@@ -32,6 +32,10 @@ services:
       APP_DOMAIN: ${APP_DOMAIN:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      SEED_INVITE_CODE: ${SEED_INVITE_CODE:-}
+      APP_NAME: ${APP_NAME:-Accounts}
     depends_on:
       postgres:
         condition: service_healthy
