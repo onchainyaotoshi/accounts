@@ -160,6 +160,50 @@ auth.getAccessToken();                 // stored token
 
 Register a client via the admin UI at `/admin/clients` or via `POST /admin/clients`.
 
+### SDK Security Note
+
+The SDK stores access tokens in `localStorage`, which is accessible to any JavaScript running on the page. This is standard for browser-based SPA clients (Auth0, Firebase, etc. use the same approach), but means an XSS vulnerability in your app could expose the token.
+
+Mitigations:
+- Set a strong Content-Security-Policy on your app
+- Sanitize all user input
+- Keep token lifetime reasonable (currently 30 days)
+- For higher security requirements, consider a Backend-for-Frontend (BFF) pattern where a server-side proxy holds the token in an httpOnly cookie
+
+## CORS Configuration
+
+Two mechanisms control which origins can make cross-origin requests to the API:
+
+### `CORS_ORIGINS` (explicit allowlist)
+
+Comma-separated list of exact origins. Most secure — only listed origins are allowed.
+
+```env
+CORS_ORIGINS=https://app.yaotoshi.xyz,https://admin.yaotoshi.xyz
+```
+
+### `APP_DOMAIN` (wildcard subdomains)
+
+Allows all `*.{APP_DOMAIN}` subdomains automatically.
+
+```env
+APP_DOMAIN=yaotoshi.xyz
+# Result: any https://*.yaotoshi.xyz is allowed
+```
+
+**Trade-off:** Convenient but trusts ALL subdomains. If any subdomain is compromised or has a dangling DNS record, it gets API access. Only use if you control all subdomains.
+
+### Which to use?
+
+| Scenario | Recommendation |
+|----------|---------------|
+| You control all subdomains | `APP_DOMAIN` is fine |
+| You have external partners or user-created subdomains | Use `CORS_ORIGINS` only |
+| You want both | Set both — they work together |
+| Local development | Neither needed — `localhost:*` is allowed in `NODE_ENV=development` |
+
+Both can be set simultaneously. An origin is allowed if it matches either mechanism.
+
 ## Commands
 
 ```bash
