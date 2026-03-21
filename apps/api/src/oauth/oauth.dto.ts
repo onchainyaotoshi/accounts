@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsUrl, MaxLength } from 'class-validator';
 
 export class AuthorizeQueryDto {
   @IsString()
@@ -9,6 +9,7 @@ export class AuthorizeQueryDto {
   client_id: string;
 
   @IsString()
+  @IsUrl()
   @MaxLength(2048)
   redirect_uri: string;
 
@@ -48,6 +49,7 @@ export class TokenRequestDto {
   client_secret?: string;
 
   @IsString()
+  @IsUrl()
   @MaxLength(2048)
   redirect_uri: string;
 

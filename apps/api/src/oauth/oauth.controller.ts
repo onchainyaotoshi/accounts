@@ -11,6 +11,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { OAuthService } from './oauth.service';
 import { SessionGuard } from '../common/guards/session.guard';
@@ -58,6 +59,7 @@ export class OAuthController {
 
   @Post('token')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   async token(@Body() body: TokenRequestDto) {
     if (body.grant_type !== 'authorization_code') {
       throw new BadRequestException(

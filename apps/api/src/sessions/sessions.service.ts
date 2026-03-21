@@ -88,6 +88,19 @@ export class SessionsService {
     return true;
   }
 
+  async revokeById(sessionId: string): Promise<boolean> {
+    const session = await this.prisma.session.findFirst({
+      where: { id: sessionId, revokedAt: null },
+    });
+    if (!session) return false;
+
+    await this.prisma.session.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() },
+    });
+    return true;
+  }
+
   async revokeAllForUser(userId: string) {
     return this.prisma.session.updateMany({
       where: { userId, revokedAt: null },

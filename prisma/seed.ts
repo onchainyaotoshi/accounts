@@ -8,6 +8,8 @@ async function main() {
   if (!adminEmail) throw new Error('ADMIN_EMAIL env var is required for seeding');
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) throw new Error('ADMIN_PASSWORD env var is required for seeding');
+  if (adminPassword.length < 8) throw new Error('ADMIN_PASSWORD must be at least 8 characters');
+  if (adminPassword === 'CHANGE_ME_BEFORE_SEEDING') throw new Error('ADMIN_PASSWORD must be changed from the default value');
   const seedInviteCode = process.env.SEED_INVITE_CODE;
   if (!seedInviteCode) throw new Error('SEED_INVITE_CODE env var is required for seeding');
 

@@ -152,14 +152,15 @@ export class AdminController {
   async revokeSession(
     @Param('id') sessionId: string,
     @CurrentUser() user: User,
-    @Query('userId') userId: string,
   ) {
-    await this.sessionsService.revoke(sessionId, userId);
-    await this.auditService.log({
-      eventType: 'SESSION_REVOKED',
-      userId: user.id,
-      metadata: { targetSessionId: sessionId, targetUserId: userId },
-    });
+    const session = await this.sessionsService.revokeById(sessionId);
+    if (session) {
+      await this.auditService.log({
+        eventType: 'SESSION_REVOKED',
+        userId: user.id,
+        metadata: { targetSessionId: sessionId },
+      });
+    }
     return { message: 'Session revoked' };
   }
 }

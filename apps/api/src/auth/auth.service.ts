@@ -223,6 +223,19 @@ export class AuthService {
     // Always return success to prevent email enumeration
     if (!user) return { message: 'If the email exists, a reset link has been sent' };
 
+    // Skip if user already has an unexpired, unconsumed token created in the last 2 minutes
+    const recentToken = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        userId: user.id,
+        consumedAt: null,
+        expiresAt: { gt: new Date() },
+        createdAt: { gt: new Date(Date.now() - 2 * 60 * 1000) },
+      },
+    });
+    if (recentToken) {
+      return { message: 'If the email exists, a reset link has been sent' };
+    }
+
     const token = generateToken();
     const tokenHash = hashToken(token);
 

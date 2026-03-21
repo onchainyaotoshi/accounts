@@ -42,6 +42,6 @@ export class EmailService {
       `,
     });
 
-    this.logger.log(`Password reset email sent to ${to}`);
+    this.logger.log('Password reset email sent');
   }
 }
