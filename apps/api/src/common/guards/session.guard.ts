@@ -44,7 +44,6 @@ export class SessionGuard implements CanActivate {
 
     (request as any).user = session.user;
     (request as any).session_id = session.id;
-    (request as any).session_token = token;
 
     return true;
   }
