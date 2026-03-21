@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'packages/auth-sdk/src/**'
+      - 'packages/auth-sdk/package.json'
+      - 'packages/auth-sdk/README.md'
       - 'packages/auth-sdk/tsup.config.ts'
       - 'packages/auth-sdk/tsconfig.json'
     branches:
