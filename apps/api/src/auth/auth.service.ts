@@ -10,6 +10,9 @@ import { AuditService } from '../audit/audit.service';
 import { verifyPassword, generateToken, hashToken } from '../common/utils/crypto';
 import { PrismaService } from '../common/prisma.service';
 
+const LOCKOUT_MAX_ATTEMPTS = 10;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -49,16 +52,52 @@ export class AuthService {
       throw new UnauthorizedException('Account is not active');
     }
 
-    const valid = await verifyPassword(user.passwordHash, params.password);
-    if (!valid) {
+    const now = new Date();
+    if (user.lockedUntil && user.lockedUntil > now) {
       await this.auditService.log({
         eventType: 'LOGIN_FAILED',
         userId: user.id,
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
-        metadata: { reason: 'invalid_password' },
+        metadata: { reason: 'account_locked' },
       });
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const valid = await verifyPassword(user.passwordHash, params.password);
+    if (!valid) {
+      const attempts = user.failedLoginAttempts + 1;
+      const shouldLock = attempts >= LOCKOUT_MAX_ATTEMPTS;
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: attempts,
+          lastFailedLoginAt: now,
+          ...(shouldLock && { lockedUntil: new Date(now.getTime() + LOCKOUT_DURATION_MS) }),
+        },
+      });
+
+      await this.auditService.log({
+        eventType: 'LOGIN_FAILED',
+        userId: user.id,
+        ipAddress: params.ipAddress,
+        userAgent: params.userAgent,
+        metadata: { reason: 'invalid_password', failedAttempts: attempts, locked: shouldLock },
+      });
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Reset lockout state on successful login
+    if (user.failedLoginAttempts > 0) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+          lastFailedLoginAt: null,
+        },
+      });
     }
 
     const { session, token } = await this.sessionsService.create({
@@ -224,7 +263,12 @@ export class AuthService {
     await this.prisma.$transaction([
       this.prisma.user.update({
         where: { id: resetToken.userId },
-        data: { passwordHash },
+        data: {
+          passwordHash,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+          lastFailedLoginAt: null,
+        },
       }),
       this.prisma.passwordResetToken.update({
         where: { id: resetToken.id },
