@@ -1,6 +1,6 @@
 # Tasks
 
-MVP backlog for accounts.example.com.
+MVP backlog for accounts service.
 
 ## Completed
 
@@ -30,23 +30,31 @@ MVP backlog for accounts.example.com.
 - [x] Admin: GET /admin/audit-logs
 - [x] Admin: GET /admin/users/:userId/sessions, POST /admin/sessions/:id/revoke
 - [x] GET /health, GET /ready (health checks)
-- [x] Rate limiting on auth endpoints (Throttler)
+- [x] Rate limiting on auth endpoints (ThrottlerGuard global + per-endpoint overrides)
 - [x] Helmet security headers
-- [x] CORS configuration
+- [x] CORS configuration (APP_DOMAIN wildcard + CORS_ORIGINS explicit)
 - [x] Audit logging for all security events
 - [x] Documentation (architecture, auth-flow, security, deployment, development-rules)
-- [x] Skills (setup, architecture, deployment, security, troubleshooting)
+- [x] Admin role enforcement (UserRole enum + AdminGuard)
+- [x] Input validation with class-validator on all DTOs (including OAuth endpoints)
+- [x] Session lastSeenAt update on authenticated requests (throttled to 5-min intervals)
+- [x] Expired record cleanup (daily cron: auth codes, reset tokens, sessions)
+- [x] Account lockout after 10 failed login attempts (15-min auto-unlock)
+- [x] Common password blocklist on signup and password reset
+- [x] OpenID Connect discovery endpoint (/.well-known/openid-configuration)
+- [x] Scope enforcement on /authorize (validated against client's registered scopes)
+- [x] Post-logout redirect support (validated against client's registered URIs)
+- [x] Client secret verification for confidential OAuth clients
+- [x] Domain-agnostic deployment (all domains configurable via env vars)
+- [x] Nginx reverse proxy template (envsubst-based)
+- [x] Security hardening (race conditions, PKCE validation, atomic transactions, CORS, cookie handling)
 
 ## Pending
 
 ### High Priority
 
 - [ ] Email integration (password reset emails via SMTP/MailHog)
-- [ ] Input validation with class-validator on all DTOs
-- [ ] Admin role enforcement (currently all authenticated users can access /admin)
 - [ ] Refresh token support for long-lived client sessions
-- [ ] Session lastSeenAt update on authenticated requests
-- [ ] Expired session cleanup (scheduled job or on-demand)
 
 ### Medium Priority
 
@@ -54,17 +62,12 @@ MVP backlog for accounts.example.com.
 - [ ] User profile update endpoint (change email, change password)
 - [ ] Client secret rotation endpoint
 - [ ] Pagination metadata in list responses (total count, page info)
-- [ ] OpenID Connect discovery endpoint (/.well-known/openid-configuration)
 - [ ] ID token (JWT) support alongside opaque access tokens
-- [ ] Scope enforcement on /me response (respect requested scopes)
-- [ ] Post-logout redirect support
 - [ ] CSRF protection for cookie-based auth
 
 ### Low Priority
 
-
 - [ ] Account deletion flow (soft delete with data retention period)
-- [ ] Brute force detection (lock account after N failed attempts)
 - [ ] Webhook notifications for security events
 - [ ] Multi-factor authentication (TOTP)
 - [ ] API key authentication for service-to-service calls
@@ -72,5 +75,4 @@ MVP backlog for accounts.example.com.
 - [ ] Prometheus metrics endpoint
 - [ ] E2E test suite for critical flows
 - [ ] Rate limiting per-user (not just per-IP)
-- [ ] Nginx reverse proxy configuration
 - [ ] CI/CD pipeline configuration
