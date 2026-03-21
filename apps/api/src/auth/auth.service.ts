@@ -230,10 +230,21 @@ export class AuthService {
         where: { id: resetToken.id },
         data: { consumedAt: new Date() },
       }),
+      // Invalidate all other outstanding reset tokens for this user
+      this.prisma.passwordResetToken.updateMany({
+        where: {
+          userId: resetToken.userId,
+          id: { not: resetToken.id },
+          consumedAt: null,
+        },
+        data: { consumedAt: new Date() },
+      }),
+      // Revoke all sessions atomically
+      this.prisma.session.updateMany({
+        where: { userId: resetToken.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
     ]);
-
-    // Revoke all sessions for security
-    await this.sessionsService.revokeAllForUser(resetToken.userId);
 
     await this.auditService.log({
       eventType: 'PASSWORD_RESET_COMPLETE',
