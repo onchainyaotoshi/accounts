@@ -109,14 +109,36 @@ export class AuthService {
       throw new BadRequestException('Email already registered');
     }
 
-    const invite = await this.invitesService.validate(
-      params.inviteCode,
-      params.email,
-    );
+    const { user, invite } = await this.prisma.$transaction(async (tx) => {
+      const invite = await tx.inviteCode.findUnique({
+        where: { code: params.inviteCode.toUpperCase().trim() },
+      });
 
-    const user = await this.usersService.create(params.email, params.password);
+      if (!invite) throw new BadRequestException('Invalid invite code');
+      if (invite.revokedAt) throw new BadRequestException('Invite code has been revoked');
+      if (invite.expiresAt && invite.expiresAt < new Date()) throw new BadRequestException('Invite code has expired');
+      if (invite.usedCount >= invite.maxUses) throw new BadRequestException('Invite code has reached maximum uses');
+      if (invite.assignedEmail && params.email && invite.assignedEmail !== params.email.toLowerCase().trim()) {
+        throw new BadRequestException('Invite code is not assigned to this email');
+      }
 
-    await this.invitesService.consume(invite.id, user.id, params.email);
+      const user = await this.usersService.createInTransaction(tx, params.email, params.password);
+
+      await tx.inviteCode.update({
+        where: { id: invite.id },
+        data: { usedCount: { increment: 1 } },
+      });
+
+      await tx.inviteCodeUsage.create({
+        data: {
+          inviteCodeId: invite.id,
+          usedByUserId: user.id,
+          usedEmail: params.email.toLowerCase().trim(),
+        },
+      });
+
+      return { user, invite };
+    });
 
     await this.auditService.log({
       eventType: 'SIGNUP',
@@ -130,7 +152,7 @@ export class AuthService {
       eventType: 'INVITE_USED',
       userId: user.id,
       ipAddress: params.ipAddress,
-      metadata: { inviteCodeId: invite.id, code: invite.code },
+      metadata: { inviteCodeId: invite.id },
     });
 
     const { token } = await this.sessionsService.create({

@@ -27,6 +27,16 @@ export class UsersService {
     });
   }
 
+  async createInTransaction(tx: any, email: string, password: string): Promise<User> {
+    const passwordHash = await hashPassword(password);
+    return tx.user.create({
+      data: {
+        email: email.toLowerCase().trim(),
+        passwordHash,
+      },
+    });
+  }
+
   async updateStatus(userId: string, status: UserStatus): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },

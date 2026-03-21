@@ -60,6 +60,7 @@ export class OAuthService {
   async exchangeCode(params: {
     code: string;
     clientId: string;
+    clientSecret?: string;
     redirectUri: string;
     codeVerifier: string;
   }) {
@@ -82,6 +83,17 @@ export class OAuthService {
       throw new BadRequestException('Redirect URI mismatch');
     }
 
+    // Verify client secret for confidential clients
+    if (authCode.client.type === 'CONFIDENTIAL') {
+      if (!params.clientSecret) {
+        throw new BadRequestException('Client secret required for confidential clients');
+      }
+      const secretHash = hashToken(params.clientSecret);
+      if (secretHash !== authCode.client.clientSecretHash) {
+        throw new BadRequestException('Invalid client secret');
+      }
+    }
+
     // Verify PKCE
     const expectedChallenge = createHash('sha256')
       .update(params.codeVerifier)
@@ -91,17 +103,21 @@ export class OAuthService {
       throw new BadRequestException('Invalid code verifier');
     }
 
-    // Mark as consumed
-    await this.prisma.authCode.update({
-      where: { id: authCode.id },
+    // Atomic consume — if count is 0, another request already consumed it
+    const consumed = await this.prisma.authCode.updateMany({
+      where: { id: authCode.id, consumedAt: null },
       data: { consumedAt: new Date() },
     });
+
+    if (consumed.count === 0) {
+      throw new BadRequestException('Authorization code already used');
+    }
 
     // Create session token for the client
     const sessionToken = generateToken();
     const sessionTokenHash = hashToken(sessionToken);
 
-    const session = await this.prisma.session.create({
+    await this.prisma.session.create({
       data: {
         userId: authCode.userId,
         clientId: authCode.client.id,
