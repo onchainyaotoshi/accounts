@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { InvitesService } from '../invites/invites.service';
 import { AuditService } from '../audit/audit.service';
+import { EmailService } from '../common/email.service';
 import { verifyPassword, generateToken, hashToken, hashPassword } from '../common/utils/crypto';
 import { isWeakPassword } from '../common/utils/password-check';
 import { PrismaService } from '../common/prisma.service';
@@ -22,6 +23,7 @@ export class AuthService {
     private invitesService: InvitesService,
     private auditService: AuditService,
     private prisma: PrismaService,
+    private emailService: EmailService,
   ) {}
 
   async login(params: {
@@ -238,10 +240,7 @@ export class AuthService {
       ipAddress,
     });
 
-    if (process.env.NODE_ENV === 'development') {
-      // TODO: Send email with reset link containing `token`
-      console.log(`[DEV] Password reset token for ${email}: ${token}`);
-    }
+    await this.emailService.sendPasswordResetEmail(email, token);
 
     return { message: 'If the email exists, a reset link has been sent' };
   }
