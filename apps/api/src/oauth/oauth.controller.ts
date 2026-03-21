@@ -16,6 +16,7 @@ import { OAuthService } from './oauth.service';
 import { SessionGuard } from '../common/guards/session.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
+import { AuthorizeQueryDto, TokenRequestDto, LogoutRequestDto } from './oauth.dto';
 
 @Controller()
 export class OAuthController {
@@ -24,87 +25,72 @@ export class OAuthController {
   @Get('authorize')
   @UseGuards(SessionGuard)
   async authorize(
-    @Query('response_type') responseType: string,
-    @Query('client_id') clientId: string,
-    @Query('redirect_uri') redirectUri: string,
-    @Query('scope') scope: string,
-    @Query('state') state: string,
-    @Query('code_challenge') codeChallenge: string,
-    @Query('code_challenge_method') codeChallengeMethod: string,
+    @Query() query: AuthorizeQueryDto,
     @CurrentUser() user: User,
     @Res() res: Response,
   ) {
-    if (responseType !== 'code') {
+    if (query.response_type !== 'code') {
       throw new BadRequestException('Only response_type=code is supported');
     }
-    if (!clientId || !redirectUri || !codeChallenge) {
+    if (!query.client_id || !query.redirect_uri || !query.code_challenge) {
       throw new BadRequestException('Missing required parameters');
     }
 
-    if (codeChallengeMethod && codeChallengeMethod !== 'S256') {
+    if (query.code_challenge_method && query.code_challenge_method !== 'S256') {
       throw new BadRequestException('Only code_challenge_method=S256 is supported');
     }
 
     const code = await this.oauthService.createAuthCode({
       userId: user.id,
-      clientId,
-      redirectUri,
-      scope: scope || 'openid email',
-      codeChallenge,
-      codeChallengeMethod: codeChallengeMethod || 'S256',
+      clientId: query.client_id,
+      redirectUri: query.redirect_uri,
+      scope: query.scope || 'openid email',
+      codeChallenge: query.code_challenge,
+      codeChallengeMethod: query.code_challenge_method || 'S256',
     });
 
-    const url = new URL(redirectUri);
+    const url = new URL(query.redirect_uri);
     url.searchParams.set('code', code);
-    if (state) url.searchParams.set('state', state);
+    if (query.state) url.searchParams.set('state', query.state);
 
     return res.redirect(url.toString());
   }
 
   @Post('token')
   @HttpCode(HttpStatus.OK)
-  async token(
-    @Body('grant_type') grantType: string,
-    @Body('code') code: string,
-    @Body('client_id') clientId: string,
-    @Body('client_secret') clientSecret: string,
-    @Body('redirect_uri') redirectUri: string,
-    @Body('code_verifier') codeVerifier: string,
-  ) {
-    if (grantType !== 'authorization_code') {
+  async token(@Body() body: TokenRequestDto) {
+    if (body.grant_type !== 'authorization_code') {
       throw new BadRequestException(
         'Only grant_type=authorization_code is supported',
       );
     }
-    if (!code || !clientId || !redirectUri || !codeVerifier) {
+    if (!body.code || !body.client_id || !body.redirect_uri || !body.code_verifier) {
       throw new BadRequestException('Missing required parameters');
     }
 
     return this.oauthService.exchangeCode({
-      code,
-      clientId,
-      clientSecret,
-      redirectUri,
-      codeVerifier,
+      code: body.code,
+      clientId: body.client_id,
+      clientSecret: body.client_secret,
+      redirectUri: body.redirect_uri,
+      codeVerifier: body.code_verifier,
     });
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(
-    @Body('post_logout_redirect_uri') postLogoutRedirectUri: string,
-    @Body('client_id') clientId: string,
-    @Body('token') token: string,
+    @Body() body: LogoutRequestDto,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const cookieToken = req.cookies?.session_token;
 
     const redirectTo = await this.oauthService.handleLogout({
-      token,
+      token: body.token,
       cookieToken,
-      clientId,
-      postLogoutRedirectUri,
+      clientId: body.client_id,
+      postLogoutRedirectUri: body.post_logout_redirect_uri,
     });
 
     // Clear the session cookie
