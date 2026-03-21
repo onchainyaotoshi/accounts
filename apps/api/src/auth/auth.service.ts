@@ -8,6 +8,7 @@ import { SessionsService } from '../sessions/sessions.service';
 import { InvitesService } from '../invites/invites.service';
 import { AuditService } from '../audit/audit.service';
 import { verifyPassword, generateToken, hashToken } from '../common/utils/crypto';
+import { isWeakPassword } from '../common/utils/password-check';
 import { PrismaService } from '../common/prisma.service';
 
 const LOCKOUT_MAX_ATTEMPTS = 10;
@@ -148,6 +149,10 @@ export class AuthService {
       throw new BadRequestException('Email already registered');
     }
 
+    if (isWeakPassword(params.password)) {
+      throw new BadRequestException('Password is too common. Please choose a stronger password.');
+    }
+
     const { user, invite } = await this.prisma.$transaction(async (tx) => {
       const invite = await tx.inviteCode.findUnique({
         where: { code: params.inviteCode.toUpperCase().trim() },
@@ -255,6 +260,10 @@ export class AuthService {
       resetToken.expiresAt < new Date()
     ) {
       throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    if (isWeakPassword(params.newPassword)) {
+      throw new BadRequestException('Password is too common. Please choose a stronger password.');
     }
 
     const { hashPassword } = await import('../common/utils/crypto');
