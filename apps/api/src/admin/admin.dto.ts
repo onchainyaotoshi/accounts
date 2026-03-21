@@ -5,12 +5,29 @@ import {
   IsInt,
   Min,
   Max,
+  MaxLength,
   IsArray,
   IsEnum,
   IsDateString,
   IsUrl,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ClientType, ClientStatus } from '@prisma/client';
+
+export class PaginationQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  skip?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  take?: number;
+}
 
 export class CreateInviteDto {
   @IsOptional()
@@ -30,9 +47,11 @@ export class CreateInviteDto {
 
 export class CreateClientDto {
   @IsString()
+  @MaxLength(255)
   name: string;
 
   @IsString()
+  @MaxLength(255)
   slug: string;
 
   @IsOptional()
@@ -57,6 +76,7 @@ export class CreateClientDto {
 export class UpdateClientDto {
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   name?: string;
 
   @IsOptional()

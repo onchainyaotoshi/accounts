@@ -1,7 +1,7 @@
 const BASE_URL =
   typeof window !== 'undefined'
     ? '/api/proxy'
-    : process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7767';
+    : process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || '';
 
 export interface ApiError {
   message: string;
@@ -71,6 +71,7 @@ export interface User {
   sub: string;
   email: string;
   email_verified: boolean;
+  role: 'USER' | 'ADMIN';
 }
 
 export const user = {

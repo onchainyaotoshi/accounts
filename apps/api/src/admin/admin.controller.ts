@@ -23,6 +23,7 @@ import {
   CreateInviteDto,
   CreateClientDto,
   UpdateClientDto,
+  PaginationQueryDto,
 } from './admin.dto';
 
 @Controller('admin')
@@ -38,20 +39,14 @@ export class AdminController {
 
   // --- Users ---
   @Get('users')
-  async listUsers(@Query('skip') skip?: string, @Query('take') take?: string) {
-    return this.usersService.list(
-      Math.max(skip ? parseInt(skip) || 0 : 0, 0),
-      Math.min(take ? parseInt(take) || 50 : 50, 100),
-    );
+  async listUsers(@Query() query: PaginationQueryDto) {
+    return this.usersService.list(query.skip ?? 0, query.take ?? 50);
   }
 
   // --- Invites ---
   @Get('invites')
-  async listInvites(@Query('skip') skip?: string, @Query('take') take?: string) {
-    return this.invitesService.list(
-      Math.max(skip ? parseInt(skip) || 0 : 0, 0),
-      Math.min(take ? parseInt(take) || 50 : 50, 100),
-    );
+  async listInvites(@Query() query: PaginationQueryDto) {
+    return this.invitesService.list(query.skip ?? 0, query.take ?? 50);
   }
 
   @Post('invites')
@@ -131,14 +126,8 @@ export class AdminController {
 
   // --- Audit ---
   @Get('audit-logs')
-  async listAuditLogs(
-    @Query('skip') skip?: string,
-    @Query('take') take?: string,
-  ) {
-    return this.auditService.listAll(
-      Math.max(skip ? parseInt(skip) || 0 : 0, 0),
-      Math.min(take ? parseInt(take) || 50 : 50, 100),
-    );
+  async listAuditLogs(@Query() query: PaginationQueryDto) {
+    return this.auditService.listAll(query.skip ?? 0, query.take ?? 50);
   }
 
   // --- Sessions (admin) ---

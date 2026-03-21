@@ -71,6 +71,19 @@ export class ClientsService {
         ...(data.redirectUris !== undefined && { redirectUris: data.redirectUris }),
         ...(data.status !== undefined && { status: data.status }),
       },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        clientId: true,
+        type: true,
+        redirectUris: true,
+        postLogoutRedirectUris: true,
+        scopes: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 

@@ -7,8 +7,8 @@ import { auth } from '@/lib/api';
 import { AuthLayout } from '@/components/auth-layout';
 
 function isAllowedRedirect(url: string): boolean {
-  // Allow relative paths
-  if (url.startsWith('/')) {
+  // Allow relative paths (reject protocol-relative URLs like //evil.com)
+  if (url.startsWith('/') && !url.startsWith('//')) {
     return true;
   }
 

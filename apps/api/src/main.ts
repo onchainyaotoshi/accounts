@@ -22,8 +22,7 @@ async function bootstrap() {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       if (!origin) return callback(null, true);
 
-      const allowedList =
-        process.env.CORS_ORIGINS?.split(',') || ['http://localhost:7768'];
+      const allowedList = process.env.CORS_ORIGINS?.split(',') || [];
       if (allowedList.includes(origin)) return callback(null, true);
 
       const appDomain = process.env.APP_DOMAIN;
@@ -45,7 +44,8 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`accounts-api running on port ${port}`);
+  const { Logger } = await import('@nestjs/common');
+  new Logger('Bootstrap').log(`accounts-api running on port ${port}`);
 }
 
 bootstrap();

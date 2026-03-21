@@ -25,8 +25,11 @@ export class OAuthService {
     redirectUri: string;
     scope: string;
     codeChallenge: string;
-    codeChallengeMethod: string;
+    codeChallengeMethod?: string;
   }) {
+    if (params.codeChallengeMethod && params.codeChallengeMethod !== 'S256') {
+      throw new BadRequestException('Only code_challenge_method=S256 is supported');
+    }
     const client = await this.clientsService.validateRedirectUri(
       params.clientId,
       params.redirectUri,
@@ -51,7 +54,7 @@ export class OAuthService {
         redirectUri: params.redirectUri,
         scope,
         codeChallenge: params.codeChallenge,
-        codeChallengeMethod: params.codeChallengeMethod || 'S256',
+        codeChallengeMethod: 'S256',
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
       },
     });
@@ -102,16 +105,7 @@ export class OAuthService {
       }
     }
 
-    // Verify PKCE
-    const expectedChallenge = createHash('sha256')
-      .update(params.codeVerifier)
-      .digest('base64url');
-
-    if (expectedChallenge !== authCode.codeChallenge) {
-      throw new BadRequestException('Invalid code verifier');
-    }
-
-    // Atomic consume — if count is 0, another request already consumed it
+    // Atomic consume — must happen before PKCE check per RFC 6749 Section 4.1.2
     const consumed = await this.prisma.authCode.updateMany({
       where: { id: authCode.id, consumedAt: null },
       data: { consumedAt: new Date() },
@@ -121,17 +115,28 @@ export class OAuthService {
       throw new BadRequestException('Authorization code already used');
     }
 
-    // Create session token for the client
+    // Verify PKCE (auth code is already consumed to prevent replay on failure)
+    const expectedChallenge = createHash('sha256')
+      .update(params.codeVerifier)
+      .digest('base64url');
+
+    if (expectedChallenge !== authCode.codeChallenge) {
+      throw new BadRequestException('Invalid code verifier');
+    }
+
+    // Create session token for the client (atomic with audit log)
     const sessionToken = generateToken();
     const sessionTokenHash = hashToken(sessionToken);
 
-    await this.prisma.session.create({
-      data: {
-        userId: authCode.userId,
-        clientId: authCode.client.id,
-        sessionTokenHash,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.session.create({
+        data: {
+          userId: authCode.userId,
+          clientId: authCode.client.id,
+          sessionTokenHash,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
     });
 
     await this.auditService.log({

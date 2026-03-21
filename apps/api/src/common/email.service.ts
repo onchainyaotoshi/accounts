@@ -9,7 +9,10 @@ export class EmailService {
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY;
-    this.from = process.env.EMAIL_FROM || 'noreply@example.com';
+    if (!process.env.EMAIL_FROM) {
+      this.logger.warn('EMAIL_FROM not set — emails may use an invalid sender address');
+    }
+    this.from = process.env.EMAIL_FROM || 'noreply@localhost';
 
     if (apiKey) {
       this.resend = new Resend(apiKey);
@@ -21,12 +24,16 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
-    const issuerUrl = process.env.ISSUER_URL || 'http://localhost:9999';
+    const issuerUrl = process.env.ISSUER_URL;
+    if (!issuerUrl) {
+      this.logger.error('ISSUER_URL not set — cannot generate password reset link');
+      return;
+    }
     const resetLink = `${issuerUrl}/reset-password?token=${token}`;
     const appName = process.env.APP_NAME || 'Accounts';
 
     if (!this.resend) {
-      this.logger.log(`[DEV] Password reset link for ${to}: ${resetLink}`);
+      this.logger.log(`[DEV] Password reset email sent to ${to}`);
       return;
     }
 

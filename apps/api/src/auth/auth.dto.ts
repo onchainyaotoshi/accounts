@@ -20,6 +20,7 @@ export class SignupWithInviteDto {
   password: string;
 
   @IsString()
+  @MaxLength(64)
   inviteCode: string;
 }
 
@@ -30,6 +31,7 @@ export class ForgotPasswordDto {
 
 export class ResetPasswordDto {
   @IsString()
+  @MaxLength(512)
   token: string;
 
   @IsString()
