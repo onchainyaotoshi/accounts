@@ -34,7 +34,7 @@ MVP backlog for accounts.yaotoshi.xyz.
 - [x] Helmet security headers
 - [x] CORS configuration
 - [x] Audit logging for all security events
-- [x] Documentation (architecture, auth-flow, security, deployment, development-rules, mcp)
+- [x] Documentation (architecture, auth-flow, security, deployment, development-rules)
 - [x] Skills (setup, architecture, deployment, security, troubleshooting)
 
 ## Pending
@@ -62,7 +62,7 @@ MVP backlog for accounts.yaotoshi.xyz.
 
 ### Low Priority
 
-- [ ] MCP server implementation for admin tools
+
 - [ ] Account deletion flow (soft delete with data retention period)
 - [ ] Brute force detection (lock account after N failed attempts)
 - [ ] Webhook notifications for security events

@@ -76,9 +76,9 @@ accounts/
 ├── infra/
 │   ├── docker/Dockerfile.api   # API container image
 │   └── nginx/                  # Reverse proxy config (pending)
-├── mcp/                        # MCP server for admin operations
+
 ├── docs/                       # Architecture and operations docs
-├── scripts/                    # Utility scripts (setup-mcp.sh, etc.)
+├── scripts/                    # Utility scripts
 ├── docker-compose.yml
 ├── package.json
 └── pnpm-workspace.yaml
@@ -160,16 +160,6 @@ auth.getAccessToken();                 // stored token
 
 Register a client via the admin UI at `/admin/clients` or via `POST /admin/clients`.
 
-## MCP Setup
-
-Register the accounts MCP server globally for Claude Code:
-
-```bash
-./scripts/setup-mcp.sh
-```
-
-Requires `ADMIN_PASSWORD` in `.env` or exported. Restart Claude Code after running.
-
 ## Commands
 
 ```bash
@@ -195,6 +185,6 @@ docker compose exec postgres psql -U accounts accounts_db
 - [Security](docs/security.md) -- Hashing, PKCE, rate limiting, audit events
 - [Deployment](docs/deployment.md) -- Environment variables, backup/restore, server migration
 - [Development Rules](docs/development-rules.md) -- Code conventions for Claude Code
-- [MCP](docs/mcp.md) -- MCP tool integration plans
+
 - [Tasks](TASKS.md) -- MVP backlog
 - [Decisions](DECISIONS.md) -- Technical decisions with rationale
