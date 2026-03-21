@@ -41,6 +41,10 @@ export class OAuthController {
       throw new BadRequestException('Missing required parameters');
     }
 
+    if (codeChallengeMethod && codeChallengeMethod !== 'S256') {
+      throw new BadRequestException('Only code_challenge_method=S256 is supported');
+    }
+
     const code = await this.oauthService.createAuthCode({
       userId: user.id,
       clientId,
@@ -114,15 +118,12 @@ export class OAuthController {
   }
 
   @Get('me')
-  async me(@Req() req: Request) {
-    const token =
-      req.cookies?.session_token ||
-      req.headers.authorization?.replace('Bearer ', '');
-
-    if (!token) {
-      throw new BadRequestException('No token provided');
-    }
-
-    return this.oauthService.getUserInfo(token);
+  @UseGuards(SessionGuard)
+  async me(@CurrentUser() user: User) {
+    return {
+      sub: user.id,
+      email: user.email,
+      email_verified: !!user.emailVerifiedAt,
+    };
   }
 }

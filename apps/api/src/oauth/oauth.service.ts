@@ -32,6 +32,14 @@ export class OAuthService {
       params.redirectUri,
     );
 
+    // Validate and filter requested scopes against client's registered scopes
+    const requestedScopes = (params.scope || 'openid email').split(' ');
+    const allowedScopes = requestedScopes.filter(s => client.scopes.includes(s));
+    if (allowedScopes.length === 0) {
+      throw new BadRequestException('No valid scopes requested');
+    }
+    const scope = allowedScopes.join(' ');
+
     const code = generateToken(32);
     const codeHash = hashToken(code);
 
@@ -41,7 +49,7 @@ export class OAuthService {
         userId: params.userId,
         clientId: client.id,
         redirectUri: params.redirectUri,
-        scope: params.scope || 'openid email',
+        scope,
         codeChallenge: params.codeChallenge,
         codeChallengeMethod: params.codeChallengeMethod || 'S256',
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes

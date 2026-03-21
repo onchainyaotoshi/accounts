@@ -10,9 +10,9 @@ export class WellKnownController {
     return {
       issuer,
       authorization_endpoint: `${issuer}/authorize`,
-      token_endpoint: `${issuer}/api/proxy/token`,
-      userinfo_endpoint: `${issuer}/api/proxy/me`,
-      end_session_endpoint: `${issuer}/api/proxy/logout`,
+      token_endpoint: `${issuer}/token`,
+      userinfo_endpoint: `${issuer}/me`,
+      end_session_endpoint: `${issuer}/logout`,
       scopes_supported: ['openid', 'email', 'profile'],
       response_types_supported: ['code'],
       grant_types_supported: ['authorization_code'],
