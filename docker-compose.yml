@@ -27,8 +27,9 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-accounts}:${POSTGRES_PASSWORD:-accounts_secret}@postgres:5432/${POSTGRES_DB:-accounts_db}
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7768,http://localhost:7769,https://accounts.yaotoshi.xyz}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7768,http://localhost:7769}
       ISSUER_URL: ${ISSUER_URL:-http://localhost:7768}
+      APP_DOMAIN: ${APP_DOMAIN:-}
       SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret}
     depends_on:
       postgres:
@@ -49,6 +50,7 @@ services:
     environment:
       INTERNAL_API_URL: http://api:3000
       NEXT_PUBLIC_API_URL: http://localhost:7767
+      NEXT_PUBLIC_APP_DOMAIN: ${APP_DOMAIN:-}
     depends_on:
       - api
 

@@ -207,7 +207,7 @@ export default function ClientsPage() {
               value={redirectUris}
               onChange={(e) => setRedirectUris(e.target.value)}
               className="input-field min-h-[80px] font-mono text-xs"
-              placeholder={"https://myapp.yaotoshi.xyz/callback\nhttp://localhost:3000/callback"}
+              placeholder={"https://myapp.example.com/callback\nhttp://localhost:3000/callback"}
               rows={3}
             />
           </div>
@@ -219,7 +219,7 @@ export default function ClientsPage() {
               value={postLogoutRedirectUris}
               onChange={(e) => setPostLogoutRedirectUris(e.target.value)}
               className="input-field min-h-[80px] font-mono text-xs"
-              placeholder={"https://myapp.yaotoshi.xyz\nhttp://localhost:3000"}
+              placeholder={"https://myapp.example.com\nhttp://localhost:3000"}
               rows={3}
             />
           </div>

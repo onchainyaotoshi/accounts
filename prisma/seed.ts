@@ -4,9 +4,12 @@ import * as argon2 from 'argon2';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@yaotoshi.xyz';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin12345678';
-  const seedInviteCode = process.env.SEED_INVITE_CODE || 'YAOTOSHI1';
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) throw new Error('ADMIN_EMAIL env var is required for seeding');
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) throw new Error('ADMIN_PASSWORD env var is required for seeding');
+  const seedInviteCode = process.env.SEED_INVITE_CODE;
+  if (!seedInviteCode) throw new Error('SEED_INVITE_CODE env var is required for seeding');
 
   // Create admin user
   const passwordHash = await argon2.hash(adminPassword, {
