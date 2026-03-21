@@ -76,6 +76,26 @@ Skip these for local dev. Only set when deploying with a domain name.
 | `APP_DOMAIN` | *(empty)* | Your root domain. If set, all `*.yourdomain.com` subdomains can talk to the API |
 | `CORS_ORIGINS` | `http://localhost:9999` | Explicit origins that can talk to the API (comma-separated) |
 
+### Email (for password reset)
+
+Password reset sends a link to the user's email via [Resend](https://resend.com). Optional — if not configured, reset links are logged to console instead.
+
+Setup:
+1. Create account at [resend.com](https://resend.com)
+2. Verify your domain (add DNS records Resend gives you — just the parent domain, e.g. `yourdomain.com`)
+3. Copy your API key
+4. Set in `.env`:
+
+```env
+RESEND_API_KEY=re_xxxxx
+EMAIL_FROM=noreply@accounts.yourdomain.com
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RESEND_API_KEY` | *(empty)* | API key from resend.com. If not set, reset emails are logged to console |
+| `EMAIL_FROM` | `noreply@example.com` | Sender address. Any `@yourdomain.com` or `@subdomain.yourdomain.com` works after verifying the parent domain |
+
 ### Other
 
 | Variable | Default | Description |
@@ -83,8 +103,6 @@ Skip these for local dev. Only set when deploying with a domain name.
 | `APP_NAME` | `Accounts` | Brand name shown in the web UI |
 | `NODE_ENV` | `development` | Set to `production` on real servers |
 | `POSTGRES_PASSWORD` | `accounts_secret` | Database password — change for production |
-| `RESEND_API_KEY` | *(empty)* | Resend API key from resend.com. If not set, reset emails are logged to console |
-| `EMAIL_FROM` | `noreply@example.com` | Sender email address. Must match your verified Resend domain |
 
 ### Example `.env` for production
 
@@ -97,6 +115,8 @@ ISSUER_URL=https://accounts.yourdomain.com
 APP_DOMAIN=yourdomain.com
 POSTGRES_PASSWORD=a-strong-db-password
 APP_NAME=MyTeam
+RESEND_API_KEY=re_xxxxx
+EMAIL_FROM=noreply@accounts.yourdomain.com
 ```
 
 ---
