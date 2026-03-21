@@ -13,7 +13,7 @@ Centralized authentication service. Invite-only registration, session-based auth
 cp .env.example .env
 ```
 
-Edit `.env` with your values:
+Edit `.env`:
 
 ```env
 ADMIN_EMAIL=admin@yourteam.com
@@ -40,7 +40,7 @@ cloudflared tunnel --url http://localhost:9999
 
 ## Configuration
 
-All config is in `.env`. Below is every variable you can set.
+All config is in `.env`.
 
 ### Credentials (required, no defaults)
 
@@ -66,15 +66,42 @@ WEB_PORT=8080
 
 Then tunnel with `cloudflared tunnel --url http://localhost:8080`.
 
-### Domain and CORS (only needed with a real domain)
+### Domain
 
-Skip these for local dev. Only set when deploying with a domain name.
+Only needed when deploying with a real domain. Skip for local dev.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ISSUER_URL` | `http://localhost:9999` | Public URL of the web UI. Set to `https://accounts.yourdomain.com` in production |
-| `APP_DOMAIN` | *(empty)* | Your root domain. If set, all `*.yourdomain.com` subdomains can talk to the API |
-| `CORS_ORIGINS` | `http://localhost:9999` | Explicit origins that can talk to the API (comma-separated) |
+**`APP_DOMAIN`** — your root domain. When set, all subdomains of this domain can talk to the API.
+
+```env
+APP_DOMAIN=example.com
+```
+
+This means:
+- `app.example.com` — allowed
+- `admin.example.com` — allowed
+- `accounts.example.com` — allowed
+- `anything.example.com` — allowed
+- `evil.com` — blocked
+
+**`ISSUER_URL`** — the public URL where the accounts web UI is accessible. Users see this URL in their browser.
+
+```env
+ISSUER_URL=https://accounts.example.com
+```
+
+**`CORS_ORIGINS`** — you usually don't need this. `APP_DOMAIN` already covers all your subdomains. Only set `CORS_ORIGINS` if you need to allow an origin outside your domain (e.g. an external partner's site).
+
+```env
+# Only needed for origins OUTSIDE your APP_DOMAIN:
+CORS_ORIGINS=https://partner-site.com,https://external-tool.io
+```
+
+**In short:** for most setups, just set these two:
+
+```env
+APP_DOMAIN=example.com
+ISSUER_URL=https://accounts.example.com
+```
 
 ### Email (for password reset)
 
@@ -82,19 +109,21 @@ Password reset sends a link to the user's email via [Resend](https://resend.com)
 
 Setup:
 1. Create account at [resend.com](https://resend.com)
-2. Verify your domain (add DNS records Resend gives you — just the parent domain, e.g. `yourdomain.com`)
+2. Verify your parent domain (e.g. `example.com`) — add the DNS records Resend gives you
 3. Copy your API key
 4. Set in `.env`:
 
 ```env
 RESEND_API_KEY=re_xxxxx
-EMAIL_FROM=noreply@accounts.yourdomain.com
+EMAIL_FROM=noreply@accounts.example.com
 ```
+
+After verifying `example.com`, you can send from any subdomain (`noreply@accounts.example.com`, `noreply@app.example.com`, etc.) without extra verification.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `RESEND_API_KEY` | *(empty)* | API key from resend.com. If not set, reset emails are logged to console |
-| `EMAIL_FROM` | `noreply@example.com` | Sender address. Any `@yourdomain.com` or `@subdomain.yourdomain.com` works after verifying the parent domain |
+| `EMAIL_FROM` | `noreply@example.com` | Sender address |
 
 ### Other
 
@@ -108,15 +137,23 @@ EMAIL_FROM=noreply@accounts.yourdomain.com
 
 ```env
 NODE_ENV=production
-ADMIN_EMAIL=admin@yourteam.com
+
+# Credentials
+ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=a-strong-password
 SEED_INVITE_CODE=YOUR-CODE
-ISSUER_URL=https://accounts.yourdomain.com
-APP_DOMAIN=yourdomain.com
+
+# Domain
+APP_DOMAIN=example.com
+ISSUER_URL=https://accounts.example.com
+
+# Email
+RESEND_API_KEY=re_xxxxx
+EMAIL_FROM=noreply@accounts.example.com
+
+# Other
 POSTGRES_PASSWORD=a-strong-db-password
 APP_NAME=MyTeam
-RESEND_API_KEY=re_xxxxx
-EMAIL_FROM=noreply@accounts.yourdomain.com
 ```
 
 ---
@@ -308,7 +345,7 @@ See the [production `.env` example](#example-env-for-production) above.
 ### 2. Generate nginx config
 
 ```bash
-ACCOUNTS_HOSTNAME=accounts.yourdomain.com \
+ACCOUNTS_HOSTNAME=accounts.example.com \
   envsubst '${ACCOUNTS_HOSTNAME}' < infra/nginx/accounts.conf.template > infra/nginx/accounts.conf
 ```
 
