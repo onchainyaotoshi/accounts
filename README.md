@@ -26,7 +26,7 @@ ADMIN_PASSWORD=your-password
 SEED_INVITE_CODE=YOUR-INVITE-CODE
 
 # Port — change if 7768 is taken. This is the port you'll tunnel/expose.
-WEB_PORT=7768
+WEB_PORT=9999
 ```
 
 ### 2. Start
@@ -43,14 +43,14 @@ docker compose exec api npx prisma db seed
 
 ### 4. Open
 
-Go to **http://localhost:7768** (or whatever `WEB_PORT` you set) and log in with your email/password.
+Go to **http://localhost:9999** (or whatever `WEB_PORT` you set) and log in with your email/password.
 
 ### 5. Cloudflared tunnel
 
 Point your tunnel to the web UI port:
 
 ```bash
-cloudflared tunnel --url http://localhost:7768
+cloudflared tunnel --url http://localhost:9999
 ```
 
 ---
@@ -61,11 +61,11 @@ For cloudflared tunnels or reverse proxies, these are the ports you need:
 
 | Service | Default port | Env var | What it is |
 |---------|-------------|---------|------------|
-| **Web UI** | `7768` | `WEB_PORT` | Login page, admin panel — **this is what you expose to users** |
-| API | `7767` | `API_PORT` | Backend API (the web UI talks to this internally) |
-| PostgreSQL | `5435` | `DB_PORT` | Database (localhost only, not exposed externally) |
+| **Web UI** | `9999` | `WEB_PORT` | Login page, admin panel — **this is what you expose to users** |
+| API | `9998` | `API_PORT` | Backend API (the web UI talks to this internally) |
+| PostgreSQL | `9997` | `DB_PORT` | Database (localhost only, not exposed externally) |
 
-**For cloudflared:** Point your tunnel to `http://localhost:7768` (or whatever you set `WEB_PORT` to).
+**For cloudflared:** Point your tunnel to `http://localhost:9999` (or whatever you set `WEB_PORT` to).
 
 To change ports, set them in `.env`:
 
@@ -107,9 +107,9 @@ Most of these you don't need to touch for local dev. Only change them when deplo
 | Variable | Default | What it does |
 |----------|---------|-------------|
 | `NODE_ENV` | `development` | Set to `production` on real servers |
-| `ISSUER_URL` | `http://localhost:7768` | Public URL of the accounts UI. Change this when you have a real domain, e.g. `https://accounts.yourdomain.com` |
+| `ISSUER_URL` | `http://localhost:9999` | Public URL of the accounts UI. Change this when you have a real domain, e.g. `https://accounts.yourdomain.com` |
 | `APP_DOMAIN` | *(empty)* | Your domain. If set, all `*.yourdomain.com` subdomains can talk to the API. Leave empty for local dev |
-| `CORS_ORIGINS` | `http://localhost:7768,...` | Specific URLs that can talk to the API (comma-separated) |
+| `CORS_ORIGINS` | `http://localhost:9999,...` | Specific URLs that can talk to the API (comma-separated) |
 | `APP_NAME` | `Accounts` | Name shown in the login page UI |
 | `POSTGRES_PASSWORD` | `accounts_secret` | Database password. Change for production |
 
@@ -137,7 +137,7 @@ If you want to add login to your own app using this accounts service, use the `@
 
 ### Step 1: Register an OAuth client
 
-Go to **http://localhost:7768/admin/clients** and create a new client:
+Go to **http://localhost:9999/admin/clients** and create a new client:
 
 - **Name**: Your app name
 - **Slug**: `my-app`
@@ -162,7 +162,7 @@ const auth = new YaotoshiAuth({
   clientId: 'your-client-id',
   redirectUri: 'http://localhost:3000/callback',
   postLogoutRedirectUri: 'http://localhost:3000',
-  accountsUrl: 'http://localhost:7768',
+  accountsUrl: 'http://localhost:9999',
 });
 
 // Login — redirects user to accounts service
@@ -203,7 +203,7 @@ const auth = new YaotoshiAuth({
   clientId: 'your-client-id',
   redirectUri: 'http://localhost:3000/callback',
   postLogoutRedirectUri: 'http://localhost:3000',
-  accountsUrl: 'http://localhost:7768',
+  accountsUrl: 'http://localhost:9999',
 });
 
 function LoginPage() {
