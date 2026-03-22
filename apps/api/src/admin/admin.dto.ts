@@ -6,7 +6,10 @@ import {
   Min,
   Max,
   MaxLength,
+  Matches,
   IsArray,
+  ArrayMaxSize,
+  ArrayMinSize,
   IsEnum,
   IsDateString,
   IsUrl,
@@ -52,6 +55,7 @@ export class CreateClientDto {
 
   @IsString()
   @MaxLength(255)
+  @Matches(/^[a-z0-9-]+$/, { message: 'Slug must contain only lowercase letters, numbers, and hyphens' })
   slug: string;
 
   @IsOptional()
@@ -59,17 +63,24 @@ export class CreateClientDto {
   type?: ClientType;
 
   @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(10)
   @IsUrl({}, { each: true })
+  @MaxLength(2048, { each: true })
   redirectUris: string[];
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMaxSize(10)
+  @IsUrl({}, { each: true })
+  @MaxLength(2048, { each: true })
   postLogoutRedirectUris?: string[];
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @IsString({ each: true })
+  @MaxLength(255, { each: true })
   scopes?: string[];
 }
 
@@ -81,8 +92,24 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(10)
   @IsUrl({}, { each: true })
+  @MaxLength(2048, { each: true })
   redirectUris?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsUrl({}, { each: true })
+  @MaxLength(2048, { each: true })
+  postLogoutRedirectUris?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(255, { each: true })
+  scopes?: string[];
 
   @IsOptional()
   @IsEnum(ClientStatus)

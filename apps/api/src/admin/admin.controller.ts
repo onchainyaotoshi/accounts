@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { SessionGuard } from '../common/guards/session.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
+import { ParseCuidPipe } from '../common/pipes/parse-cuid.pipe';
 import { UsersService } from '../users/users.service';
 import { InvitesService } from '../invites/invites.service';
 import { ClientsService } from '../clients/clients.service';
@@ -69,7 +70,7 @@ export class AdminController {
 
   @Post('invites/:id/revoke')
   @HttpCode(HttpStatus.OK)
-  async revokeInvite(@Param('id') id: string, @CurrentUser() user: User) {
+  async revokeInvite(@Param('id', ParseCuidPipe) id: string, @CurrentUser() user: User) {
     const invite = await this.invitesService.revoke(id);
 
     await this.auditService.log({
@@ -109,7 +110,7 @@ export class AdminController {
 
   @Patch('clients/:id')
   async updateClient(
-    @Param('id') id: string,
+    @Param('id', ParseCuidPipe) id: string,
     @Body() body: UpdateClientDto,
     @CurrentUser() user: User,
   ) {
@@ -132,14 +133,14 @@ export class AdminController {
 
   // --- Sessions (admin) ---
   @Get('users/:userId/sessions')
-  async listUserSessions(@Param('userId') userId: string) {
+  async listUserSessions(@Param('userId', ParseCuidPipe) userId: string) {
     return this.sessionsService.listForUser(userId);
   }
 
   @Post('sessions/:id/revoke')
   @HttpCode(HttpStatus.OK)
   async revokeSession(
-    @Param('id') sessionId: string,
+    @Param('id', ParseCuidPipe) sessionId: string,
     @CurrentUser() user: User,
   ) {
     const session = await this.sessionsService.revokeById(sessionId);

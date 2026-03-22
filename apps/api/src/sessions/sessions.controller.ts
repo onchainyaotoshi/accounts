@@ -14,6 +14,7 @@ import {
   CurrentSessionId,
 } from '../common/decorators/current-user.decorator';
 import { AuditService } from '../audit/audit.service';
+import { ParseCuidPipe } from '../common/pipes/parse-cuid.pipe';
 import { User } from '@prisma/client';
 
 @Controller('sessions')
@@ -35,20 +36,6 @@ export class SessionsController {
     };
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async revoke(
-    @Param('id') id: string,
-    @CurrentUser() user: User,
-  ) {
-    await this.sessionsService.revoke(id, user.id);
-    await this.auditService.log({
-      eventType: 'SESSION_REVOKED',
-      userId: user.id,
-      metadata: { sessionId: id },
-    });
-  }
-
   @Delete('others/all')
   @HttpCode(HttpStatus.NO_CONTENT)
   async revokeOthers(
@@ -59,6 +46,20 @@ export class SessionsController {
     await this.auditService.log({
       eventType: 'ALL_SESSIONS_REVOKED',
       userId: user.id,
+    });
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async revoke(
+    @Param('id', ParseCuidPipe) id: string,
+    @CurrentUser() user: User,
+  ) {
+    await this.sessionsService.revoke(id, user.id);
+    await this.auditService.log({
+      eventType: 'SESSION_REVOKED',
+      userId: user.id,
+      metadata: { sessionId: id },
     });
   }
 }

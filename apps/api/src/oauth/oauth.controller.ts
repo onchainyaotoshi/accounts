@@ -25,6 +25,7 @@ export class OAuthController {
 
   @Get('authorize')
   @UseGuards(SessionGuard)
+  @Throttle({ short: { limit: 20, ttl: 60000 } })
   async authorize(
     @Query() query: AuthorizeQueryDto,
     @CurrentUser() user: User,
@@ -81,6 +82,7 @@ export class OAuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async logout(
     @Body() body: LogoutRequestDto,
     @Req() req: Request,

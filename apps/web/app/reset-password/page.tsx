@@ -80,6 +80,7 @@ function ResetPasswordForm() {
           placeholder="Choose a strong password"
           required
           minLength={8}
+          maxLength={128}
           autoFocus
         />
       </div>

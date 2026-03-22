@@ -78,8 +78,9 @@ export default function SignupPage() {
             placeholder="Choose a strong password"
             required
             minLength={8}
+            maxLength={128}
           />
-          <p className="mt-1 text-xs text-text-tertiary">Minimum 8 characters</p>
+          <p className="mt-1 text-xs text-text-tertiary">8–128 characters</p>
         </div>
         <button type="submit" disabled={loading} className="btn-primary w-full">
           {loading ? 'Creating account...' : 'Create account'}

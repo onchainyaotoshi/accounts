@@ -63,12 +63,20 @@ export class ClientsService {
     return client.postLogoutRedirectUris.includes(postLogoutRedirectUri);
   }
 
-  async update(id: string, data: { name?: string; redirectUris?: string[]; status?: ClientStatus }) {
+  async update(id: string, data: {
+    name?: string;
+    redirectUris?: string[];
+    postLogoutRedirectUris?: string[];
+    scopes?: string[];
+    status?: ClientStatus;
+  }) {
     return this.prisma.client.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.redirectUris !== undefined && { redirectUris: data.redirectUris }),
+        ...(data.postLogoutRedirectUris !== undefined && { postLogoutRedirectUris: data.postLogoutRedirectUris }),
+        ...(data.scopes !== undefined && { scopes: data.scopes }),
         ...(data.status !== undefined && { status: data.status }),
       },
       select: {
