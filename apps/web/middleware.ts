@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const EXPLICIT_ORIGINS: Set<string> = new Set(
+  (process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean),
+);
+
 const ALLOWED_ORIGIN_PATTERNS: RegExp[] = (() => {
   const patterns: RegExp[] = [];
   if (process.env.NODE_ENV !== 'production') {
@@ -15,7 +19,8 @@ const ALLOWED_ORIGIN_PATTERNS: RegExp[] = (() => {
 })();
 
 function isAllowedOrigin(origin: string): boolean {
-  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
+  return EXPLICIT_ORIGINS.has(origin) ||
+    ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
 }
 
 function corsHeaders(origin: string): Record<string, string> {
