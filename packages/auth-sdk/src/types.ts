@@ -17,6 +17,17 @@ export interface YaotoshiAuthConfig {
    * or '' when connecting directly to the API.
    */
   apiPathPrefix?: string;
+  /**
+   * Base URL for a same-origin backend proxy that forwards requests to the accounts API.
+   * When set, API calls (token, /me, logout) are sent to this URL instead of accountsUrl.
+   * Login redirects still go to accountsUrl (browser redirects are not affected by CORS).
+   *
+   * Example: '/auth/proxy' → API calls go to '/auth/proxy/token', '/auth/proxy/me', etc.
+   *
+   * Use this when your app runs on a different domain than the accounts service
+   * and you want to avoid CORS by routing API calls through your own backend.
+   */
+  proxyBaseUrl?: string;
 }
 
 export interface TokenResponse {

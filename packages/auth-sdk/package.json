@@ -1,6 +1,6 @@
 {
   "name": "@yaotoshi/auth-sdk",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Authentication SDK for Yaotoshi ecosystem apps",
   "license": "MIT",
   "type": "module",

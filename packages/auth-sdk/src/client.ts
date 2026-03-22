@@ -20,6 +20,9 @@ export class YaotoshiAuth {
   }
 
   private apiUrl(path: string): string {
+    if (this.config.proxyBaseUrl !== undefined) {
+      return `${this.config.proxyBaseUrl}${path}`;
+    }
     const prefix = this.config.apiPathPrefix ?? '/api/proxy';
     return `${this.config.accountsUrl}${prefix}${path}`;
   }
