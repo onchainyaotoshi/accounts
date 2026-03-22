@@ -76,6 +76,7 @@ await auth.logout();
 | `postLogoutRedirectUri` | No | — | Where to redirect after logout. If not set, user stays on the accounts login page |
 | `scopes` | No | `['openid', 'email']` | OAuth scopes to request |
 | `apiPathPrefix` | No | `'/api/proxy'` | API path prefix. Use `''` if connecting directly to the API |
+| `proxyBaseUrl` | No | — | Base URL for a same-origin backend proxy. When set, API calls go here instead of `accountsUrl`. See [Cross-Origin Setup](#cross-origin-setup-different-domain) |
 | `storagePrefix` | No | `'yaotoshi_auth'` | Prefix for localStorage/sessionStorage keys |
 
 ## Setup
@@ -135,6 +136,48 @@ function Dashboard() {
     </div>
   );
 }
+```
+
+## Cross-Origin Setup (Different Domain)
+
+If your app runs on a different domain than the accounts service (e.g. `app.example.com` → `accounts.example.com`), the SDK's API calls will be cross-origin. You have two options:
+
+### Option A: Backend Proxy (Recommended)
+
+Route API calls through your own backend to avoid CORS entirely. Set `proxyBaseUrl` to point at your backend proxy endpoint:
+
+```ts
+const auth = new YaotoshiAuth({
+  clientId: 'your-client-id',
+  redirectUri: 'https://app.example.com/callback',
+  accountsUrl: 'https://accounts.example.com',
+  proxyBaseUrl: '/auth/proxy',  // API calls go to /auth/proxy/token, /auth/proxy/me, etc.
+});
+```
+
+Your backend proxy forwards requests to the accounts API:
+- `/auth/proxy/token` → `https://accounts.example.com/api/proxy/token`
+- `/auth/proxy/me` → `https://accounts.example.com/api/proxy/me`
+- `/auth/proxy/logout` → `https://accounts.example.com/api/proxy/logout`
+
+Login redirects (`auth.login()`) always go directly to `accountsUrl` — browser redirects are not affected by CORS.
+
+### Option B: Configure CORS on Accounts Server
+
+Add your app's origin to `CORS_ORIGINS` on the accounts server:
+
+```env
+# In the accounts service .env
+CORS_ORIGINS=https://app.example.com,https://other-app.example.com
+```
+
+This allows the SDK to make cross-origin requests directly. No `proxyBaseUrl` needed.
+
+For wildcard subdomain support, set `APP_DOMAIN`:
+
+```env
+APP_DOMAIN=example.com
+# Allows https://*.example.com
 ```
 
 ## Connecting Directly to the API
