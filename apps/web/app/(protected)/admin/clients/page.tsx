@@ -12,6 +12,7 @@ export default function ClientsPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
+  const [secretCopied, setSecretCopied] = useState(false);
 
   // Create form
   const [name, setName] = useState('');
@@ -237,18 +238,37 @@ export default function ClientsPage() {
       {/* Client Secret Modal */}
       <Modal
         open={!!createdSecret}
-        onClose={() => setCreatedSecret(null)}
+        onClose={() => { setCreatedSecret(null); setSecretCopied(false); }}
         title="Client Secret"
       >
         <div className="space-y-4">
           <p className="text-sm text-text-secondary">
             Copy this secret now. It will not be shown again.
           </p>
-          <code className="block font-mono text-sm bg-surface-2 px-4 py-3 rounded-lg break-all text-text-primary">
-            {createdSecret}
-          </code>
+          <div className="relative">
+            <code className="block font-mono text-sm bg-surface-2 px-4 py-3 rounded-lg break-all text-text-primary">
+              {createdSecret}
+            </code>
+            <button
+              type="button"
+              className="absolute top-2 right-2 btn-ghost btn-small text-xs"
+              onClick={async () => {
+                if (createdSecret) {
+                  try {
+                    await navigator.clipboard.writeText(createdSecret);
+                    setSecretCopied(true);
+                    setTimeout(() => setSecretCopied(false), 3000);
+                  } catch {
+                    setError('Failed to copy — please select and copy manually');
+                  }
+                }
+              }}
+            >
+              {secretCopied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
           <div className="flex justify-end">
-            <button className="btn-primary" onClick={() => setCreatedSecret(null)}>
+            <button className="btn-primary" onClick={() => { setCreatedSecret(null); setSecretCopied(false); }}>
               Done
             </button>
           </div>

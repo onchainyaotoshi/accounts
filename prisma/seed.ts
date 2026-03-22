@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
+import { isWeakPassword } from '../apps/api/src/common/utils/password-check';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,9 @@ async function main() {
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) throw new Error('ADMIN_PASSWORD env var is required for seeding');
   if (adminPassword.length < 8) throw new Error('ADMIN_PASSWORD must be at least 8 characters');
+  if (adminPassword.length > 128) throw new Error('ADMIN_PASSWORD must be at most 128 characters');
   if (adminPassword === 'CHANGE_ME_BEFORE_SEEDING') throw new Error('ADMIN_PASSWORD must be changed from the default value');
+  if (isWeakPassword(adminPassword)) throw new Error('ADMIN_PASSWORD is too weak — choose a stronger password');
   const seedInviteCode = process.env.SEED_INVITE_CODE;
   if (!seedInviteCode) throw new Error('SEED_INVITE_CODE env var is required for seeding');
 

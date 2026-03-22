@@ -3,7 +3,7 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { createHash } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../common/prisma.service';
 import { ClientsService } from '../clients/clients.service';
 import { AuditService } from '../audit/audit.service';
@@ -100,7 +100,10 @@ export class OAuthService {
         throw new BadRequestException('Client secret required for confidential clients');
       }
       const secretHash = hashToken(params.clientSecret);
-      if (secretHash !== authCode.client.clientSecretHash) {
+      if (
+        !authCode.client.clientSecretHash ||
+        !timingSafeEqual(Buffer.from(secretHash), Buffer.from(authCode.client.clientSecretHash))
+      ) {
         throw new BadRequestException('Invalid client secret');
       }
     }
@@ -120,7 +123,9 @@ export class OAuthService {
       .update(params.codeVerifier)
       .digest('base64url');
 
-    if (expectedChallenge !== authCode.codeChallenge) {
+    if (
+      !timingSafeEqual(Buffer.from(expectedChallenge), Buffer.from(authCode.codeChallenge))
+    ) {
       throw new BadRequestException('Invalid code verifier');
     }
 

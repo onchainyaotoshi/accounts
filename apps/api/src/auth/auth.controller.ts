@@ -46,6 +46,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const match = req.headers.authorization?.match(/^Bearer\s+(.+)$/);
     const token = req.cookies?.session_token || match?.[1];

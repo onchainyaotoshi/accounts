@@ -34,36 +34,22 @@ export class AuthStorage {
   }
 
   getPersistent(name: string): string | null {
-    try {
-      return localStorage.getItem(this.key(name));
-    } catch {
-      return null;
-    }
+    return this.get(name);
   }
 
   setPersistent(name: string, value: string): void {
-    try {
-      localStorage.setItem(this.key(name), value);
-    } catch {
-      // Storage unavailable
-    }
+    this.set(name, value);
   }
 
   removePersistent(name: string): void {
-    try {
-      localStorage.removeItem(this.key(name));
-    } catch {
-      // Storage unavailable
-    }
+    this.remove(name);
   }
 
   clearAll(): void {
     try {
       const prefix = this.prefix + '_';
-      for (const store of [sessionStorage, localStorage]) {
-        const keys = Object.keys(store).filter(k => k.startsWith(prefix));
-        keys.forEach(k => store.removeItem(k));
-      }
+      const keys = Object.keys(sessionStorage).filter(k => k.startsWith(prefix));
+      keys.forEach(k => sessionStorage.removeItem(k));
     } catch {
       // Storage unavailable
     }
