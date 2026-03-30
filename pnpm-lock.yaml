@@ -63,6 +63,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.6
         version: 1.4.7
+      express:
+        specifier: ^5.0.0
+        version: 5.2.1
       express-session:
         specifier: ^1.18.0
         version: 1.19.0
