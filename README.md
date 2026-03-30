@@ -48,6 +48,8 @@ All config lives in `.env`. Below is what each variable does and when you need i
 
 | Variable | Description |
 |----------|-------------|
+| `POSTGRES_USER` | PostgreSQL username |
+| `POSTGRES_PASSWORD` | PostgreSQL password |
 | `ADMIN_EMAIL` | Admin login email |
 | `ADMIN_PASSWORD` | Admin login password |
 | `SEED_INVITE_CODE` | Invite code for signups — share with your team |
@@ -97,7 +99,7 @@ Setup: create a Resend account, verify your domain, copy the API key.
 |----------|---------|-------------|
 | `APP_NAME` | `Accounts` | Brand name shown in the UI |
 | `NODE_ENV` | `development` | Set to `production` on real servers |
-| `POSTGRES_PASSWORD` | `accounts_secret` | Database password — **change for production** |
+| `POSTGRES_DB` | `accounts_db` | Database name |
 
 ---
 
@@ -112,6 +114,7 @@ NODE_ENV=production
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=a-strong-password
 SEED_INVITE_CODE=YOUR-CODE
+POSTGRES_USER=accounts
 POSTGRES_PASSWORD=a-strong-db-password
 
 # Domain
