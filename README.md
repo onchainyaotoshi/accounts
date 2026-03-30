@@ -52,11 +52,15 @@ All config is in `.env`.
 
 ### Ports
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `WEB_PORT` | `9999` | Web UI — **point cloudflared here** |
-| `API_PORT` | `9998` | Backend API |
-| `DB_PORT` | `9997` | PostgreSQL |
+These control which **localhost ports** the services are exposed on. Internal container ports are handled automatically — you only set the host-side ports.
+
+| Variable | Default | What it exposes |
+|----------|---------|-----------------|
+| `WEB_PORT` | `9999` | Web UI — **point your reverse proxy here** |
+| `API_PORT` | `9998` | Backend API (browser calls this directly) |
+| `DB_PORT` | `9997` | PostgreSQL (for local debugging, e.g. `psql`) |
+
+> Most users only need to change these if the defaults conflict with another service on the same machine.
 
 Example — change web UI to port 8080:
 
@@ -133,28 +137,29 @@ After verifying `example.com`, you can send from any subdomain (`noreply@account
 | `NODE_ENV` | `development` | Set to `production` on real servers |
 | `POSTGRES_PASSWORD` | `accounts_secret` | Database password — change for production |
 
-### Example `.env` for production
+### Minimal production `.env`
+
+Only these matter for a typical deploy. Everything else has sensible defaults.
 
 ```env
 NODE_ENV=production
 
-# Credentials
+# Credentials (required)
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=a-strong-password
 SEED_INVITE_CODE=YOUR-CODE
+POSTGRES_PASSWORD=a-strong-db-password
 
-# Domain
+# Domain (required for production)
 APP_DOMAIN=example.com
 ISSUER_URL=https://accounts.example.com
 
-# Email
+# Email (optional — reset links logged to console if not set)
 RESEND_API_KEY=re_xxxxx
 EMAIL_FROM=noreply@accounts.example.com
-
-# Other
-POSTGRES_PASSWORD=a-strong-db-password
-APP_NAME=MyTeam
 ```
+
+> **What you can skip:** `WEB_PORT`, `API_PORT`, `DB_PORT` — defaults (9999/9998/9997) work fine unless they conflict with something else. `APP_NAME`, `CORS_ORIGINS` — optional.
 
 ---
 
@@ -466,25 +471,40 @@ Tokens are stored in `localStorage` (same as Auth0, Firebase). Mitigate XSS risk
 
 ## Production Deployment
 
-<details>
-<summary>Expand</summary>
+### 1. Configure `.env`
 
-### 1. Set environment variables
+Copy `.env.example` to `.env` and fill in the [production values](#minimal-production-env) above.
 
-See the [production `.env` example](#example-env-for-production) above.
-
-### 2. Generate nginx config
+### 2. Start services
 
 ```bash
+docker compose up -d
+docker compose exec api npx prisma db seed   # first time only
+```
+
+### 3. Reverse proxy
+
+Point your reverse proxy (nginx, Caddy, Cloudflare Tunnel, etc.) at the **web UI port** (default `9999`).
+
+The web UI handles all browser traffic — it proxies API requests internally, so you only need to expose one port.
+
+**nginx example:**
+
+```bash
+# Generate config from template
 ACCOUNTS_HOSTNAME=accounts.example.com \
   envsubst '${ACCOUNTS_HOSTNAME}' < infra/nginx/accounts.conf.template > infra/nginx/accounts.conf
 ```
 
-### 3. TLS
+**Cloudflare Tunnel:**
 
-The nginx template listens on port 80. Put it behind Cloudflare, Caddy, or nginx with certbot for HTTPS.
+```bash
+cloudflared tunnel --url http://localhost:9999
+```
 
-</details>
+### 4. TLS
+
+The nginx template listens on port 80. Use Cloudflare, Caddy, or certbot for HTTPS. `ISSUER_URL` must match the public HTTPS URL (e.g. `https://accounts.example.com`).
 
 ## Docs
 
